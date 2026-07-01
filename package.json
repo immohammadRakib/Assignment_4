@@ -1,0 +1,45 @@
+{
+  "name": "assignment_4",
+  "version": "0.0.1",
+  "description": "Assignment 4",
+  "homepage": "https://github.com/immohammadRakib/Assignment_4#readme",
+  "bugs": {
+    "url": "https://github.com/immohammadRakib/Assignment_4/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/immohammadRakib/Assignment_4.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "server.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "esbuild": "^0.28.1",
+    "express": "^5.2.1",
+    "http-status": "^2.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.22.0",
+    "undici-types": "^8.3.0"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.0.1",
+    "@types/pg": "^8.20.0",
+    "prisma": "^7.8.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}
