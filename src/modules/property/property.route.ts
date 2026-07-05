@@ -8,7 +8,7 @@ const router = express.Router();
 // Publicly properties dekhate auth lagbe na
 router.get('/properties', PropertyController.getAllProperties);
 
-// Shudhu authenticated landlord-ra post korte parbe
+// Shudhu authenticated landlord-ra property korte parbe
 router.post('/landlord/properties', auth( Role.LANDLORD ), PropertyController.createProperty);
 
 export const PropertyRoutes = router;

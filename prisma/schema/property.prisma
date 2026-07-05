@@ -5,17 +5,36 @@ model Property {
   location    String
   city        String
   pricePerDay Float
-  type        String // e.g., Apartment, Studio
   images      String[]
+  status      PropertyStatus @default(PENDING)
+  views      Int        @default(0)
   isAvailable Boolean  @default(true)
-  landlordId  String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
-  landlord User      @relation("LandlordProperties", fields: [landlordId], references: [id], onDelete: Cascade)
-  bookings Booking[]
-  reviews  Review[]
+  landlordId  String
+  landlord    User      @relation("LandlordProperties", fields: [landlordId], references: [id], onDelete: Cascade)
+  
+  // Clean relational categories constraint model mapping block
+
+  bookings    Booking[]
+  reviews     Review[]
 
   @@map("properties")
 }
+
+
+
+model Category {
+  id         String     @id @default(uuid())
+  name       String     @unique // e.g., Apartment, House, Studio
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  // Relation: Ekti category-r bhetor onek property thakte pare
+ // properties Property[]
+
+  @@map("categories")
+}
+

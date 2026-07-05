@@ -1,76 +1,98 @@
+import { NextFunction, Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
-import { Role } from "../../generated/prisma/enums";  
+import { Role } from "../../generated/prisma/enums";
 import config from "../config";
-import { jwtUtils } from "../utils/jwt";
 import { prisma } from "../lib/prisma";
 import { catchAsync } from "../utils/catchAsync";
-import httpStatus from "http-status";
-import { NextFunction, Request, Response } from "express";
-
+import { jwtUtils } from "../utils/jwt";
+import httpStatus from "http-status"; // 👈 HTTP Status ব্যবহার করার জন্য (ভালো প্র্যাকটিস)
 
 declare global {
     namespace Express {
         interface Request {
             user?: {
-                id: string,
-                name: string,
-                email: string,
-                role: Role
+                email: string;
+                name: string;
+                id: string;
+                role: Role;
             }
         }
     }
 }
 
+export const auth = (...requiredRoles: Role[]) => {
+    return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        
+        // ১. টোকেন এক্সট্র্যাক্ট করা
+        const token = req.cookies.accessToken ?
+            req.cookies.accessToken 
+            :
+            req.headers.authorization?.startsWith("Bearer ") ? 
+            req.headers.authorization?.split(" ")[1] 
+            : req.headers.authorization;
 
-export const auth = ( ...requiredRoles: Role[] ) => {
-    return catchAsync( async ( req: Request, res: Response, next: NextFunction ) => {
-        const token = req.cookies.accessToken ? req.cookies.accessToken
-        : req.headers.authorization?.startsWith("Bearer") ? 
-        req.headers.authorization?.split(" ")[1] : req.headers.authorization;
-
-        if( !token ){
-            throw new Error("Your are not logged in, please log in to access this resource")
+        if (!token) {
+            return res.status(httpStatus.UNAUTHORIZED).json({
+                success: false,
+                statusCode: httpStatus.UNAUTHORIZED,
+                message: "You are not logged in. Please log in to access this resource."
+            });
         }
 
-        const verifiedToken = jwtUtils.verifyToken( token, config.jwt_access_secret )
+        // ২. টোকেন ভেরিফাই করা
+        const verifiedToken = jwtUtils.verifyToken(token, config.jwt_access_secret);
 
-        if( !verifiedToken.success ){
-            throw new Error(verifiedToken.error)
+        if (!verifiedToken.success) {
+            return res.status(httpStatus.UNAUTHORIZED).json({
+                success: false,
+                statusCode: httpStatus.UNAUTHORIZED,
+                message: verifiedToken.error || "Token verification failed."
+            });
         }
 
-    const { name, email, id, role } = verifiedToken.data as JwtPayload;
-    const requiredRole = [ Role.ADMIN, Role.LANDLORD, Role.TENANT ];
-    if( requiredRole.length && !requiredRole.includes(role) ) {
-        return res.status(403).json({
-            success: false,
-            statusCode: httpStatus.FORBIDDEN,
-            message: "Forbidden, you don't have permission to have this resource"
-        })
-    }
+        const { email, name, id, role } = verifiedToken.data as JwtPayload;
 
-    const user = await prisma.user.findFirst({
-        where: {
-            id,
-            email,
-            name,
-            role
+        // ৩. রোল বা পারমিশন চেক করা
+        if (requiredRoles.length && !requiredRoles.includes(role)) {
+            return res.status(httpStatus.FORBIDDEN).json({
+                success: false,
+                statusCode: httpStatus.FORBIDDEN,
+                message: "Forbidden. You don't have permission to access this resource."
+            });
         }
-    })
 
-    if( !user ){
-        throw new Error("user not found, Please log in again")
-    }
+        // ৪. ডেটাবেজ চেক (শুধুমাত্র UNIQUE ID দিয়ে সার্চ করতে হবে) ✅
+        const user = await prisma.user.findUnique({
+            where: {
+                id: id // 👈 শুধু ID দিয়ে খুঁজবেন, name বা email দিয়ে নয়
+            }
+        });
 
-    // if( user.activeStatus === "BLOCKED"){
-    //     throw new Error("your account blocked, contract support")
-    // }
-    //     req.user = {
-    //     id,
-    //     name,
-    //     email,
-    //     role
-    // }
-    next();
+        if (!user) {
+            return res.status(httpStatus.NOT_FOUND).json({
+                success: false,
+                statusCode: httpStatus.NOT_FOUND,
+                message: "User not found. Please log in again."
+            });
+        }
 
- })
-}
+        // ৫. অ্যাকাউন্ট স্ট্যাটাস চেক করা
+        if (user.activeStatus === "BLOCKED") {
+            return res.status(httpStatus.FORBIDDEN).json({
+                success: false,
+                statusCode: httpStatus.FORBIDDEN,
+                message: "Your account has been blocked. Please contact support."
+            });
+        }
+
+        // ৬. কন্ট্রোলারের জন্য Request অবজেক্টে ডেটা সেট করা
+        req.user = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role as Role
+        };
+
+        next();
+    });
+};
