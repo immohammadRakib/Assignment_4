@@ -1,0 +1,20 @@
+model Booking {
+  id         String        @id @default(uuid())
+  tenantId   String
+  propertyId String
+  startDate  DateTime
+  endDate    DateTime
+  totalPrice Float
+  status     BookingStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  // Relations
+  tenant   User     @relation("TenantBookings", fields: [tenantId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  // Payment er sathe 1:1 relation
+  payment Payment?
+
+  @@map("bookings")
+}

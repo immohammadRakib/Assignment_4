@@ -1,0 +1,17 @@
+enum Role {
+  ADMIN
+  LANDLORD
+  TENANT
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}

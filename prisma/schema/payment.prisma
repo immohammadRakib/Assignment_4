@@ -1,0 +1,15 @@
+model Payment {
+  id            String        @id @default(uuid())
+  bookingId     String        @unique // 1:1 relation er jonno unique dorkar
+  amount        Float
+  transactionId String        @unique // Stripe/SSLCommerz ID
+  status        PaymentStatus @default(PENDING)
+  method        String // e.g., "STRIPE"
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relation with Booking model
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
