@@ -31,24 +31,25 @@ const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
  * Handles SSLCommerz redirection after successful payment and verifies transaction.
  * POST /api/payments/confirm
  */
-// const confirmPayment = catchAsync(async (req: Request, res: Response) => {
-//     const { tranId, bookingId } = req.query;
-//     const paymentResponse = req.body; // SSLCommerz sends status data in body
+const confirmPayment = catchAsync(async (req: Request, res: Response) => {
+    const { tranId, bookingId } = req.query;
+    const paymentResponse = req.body; // SSLCommerz sends status data in body
 
-//     // Validate the payment using SSLCommerz Order Validation API
-//     const result = await paymentService.verifyPayment(
-//         tranId as string, 
-//         bookingId as string, 
-//         paymentResponse
-//     );
+    console.log("📄 Full Success Response Data:", paymentResponse);
+    // Validate the payment using SSLCommerz Order Validation API
+    const result = await paymentService.verifyPayment(
+        tranId as string, 
+        bookingId as string, 
+        paymentResponse
+    );
 
-//     // After verification, redirect the user back to the frontend
-//     if (result.success) {
-//         res.redirect(`${process.env.FRONTEND_URL}/payment/success?tranId=${tranId}`);
-//     } else {
-//         res.redirect(`${process.env.FRONTEND_URL}/payment/fail`);
-//     }
-// });
+    // After verification, redirect the user back to the frontend
+      if (result.success) {
+        return res.redirect(`http://localhost:3000/payments?tranId=${tranId}&status=success`)
+    } else {
+        return res.redirect(`http://localhost:3000/payments?status=fail`);
+    }
+});
 
 /**
  * Retrieves the logged-in user's payment history.
@@ -84,7 +85,7 @@ const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
 
 export const PaymentController = {
     createPaymentIntent,
-    // confirmPayment,
+    confirmPayment,
     // getPaymentHistory,
     // getPaymentDetails,
 };

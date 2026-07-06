@@ -16,10 +16,10 @@ router.post(
 // ২. SSLCommerz কলব্যাক রাউট (পেমেন্ট ভেরিফাই করার জন্য)
 // নোট: এটি POST হতে হবে কারণ SSLCommerz ডাটা POST মেথডে পাঠায়
 // Endpoint: POST /api/payments/confirm
-// router.post(
-//     '/confirm',
-//     PaymentController.confirmPayment
-// );
+router.post(
+    '/confirm',
+    PaymentController.confirmPayment
+);
 
 // ৩. ইউজারের নিজের পেমেন্ট হিস্টোরি দেখা
 // Endpoint: GET /api/payments

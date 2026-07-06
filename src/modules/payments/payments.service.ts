@@ -4,7 +4,6 @@ import axios from "axios"
 import { prisma } from "../../lib/prisma";
 
 const initialPayement = async (bookingId: string, user: User) => {
-    // কন্ট্রোলার থেকে আসা bookingId এবং authenticated user ব্যবহার করে বুকিংটি খুঁজে বের করা
     const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: { tenant: true, property: true }
@@ -14,7 +13,6 @@ const initialPayement = async (bookingId: string, user: User) => {
         throw new Error("Booking not found!");
     }
 
-    // ল্যান্ডলর্ড CONFIRMED করলেই কেবল পেমেন্ট শুরু হবে
     if (booking.status !== "CONFIRMED") {
         throw new Error("You cannot pay for this booking until the landlord confirms the request.");
     }
@@ -27,10 +25,9 @@ const initialPayement = async (bookingId: string, user: User) => {
         total_amount: booking.totalPrice.toString(),
         currency: "BDT",
         tran_id: tranId,
-        // কন্ট্রোলার অনুযায়ী কলব্যাক ইউআরএল
-        success_url: "http://yoursite.com/success.php",
-        fail_url: "http://yoursite.com/fail.php",
-        cancel_url: "http://yoursite.com/cancel.php",
+        success_url: `${config.app_url}/api/payments/confirm?tranId=${tranId}&bookingId=${bookingId}`,
+        fail_url: `${config.app_url}/api/payments/fail?tranId=${tranId}&bookingId=${bookingId}`,
+        cancel_url: `${config.app_url}/api/payments/cancel?tranId=${tranId}&bookingId=${bookingId}`,
         ipn_url: "http://yoursite.com/ipn.php",
         cus_name: user.name,
         cus_email: user.email,
@@ -60,35 +57,27 @@ const initialPayement = async (bookingId: string, user: User) => {
 /**
  * SSLCommerz পেমেন্ট ভেরিফাই করার মেথড
  */
-// const verifyPayment = async (tranId: string, bookingId: string, paymentResponse: any) => {
-//     // ১. পেমেন্ট স্ট্যাটাস VALID কি না চেক করা (SSLCommerz Order Validation API ব্যবহার করা যেতে পারে)
-//     if (paymentResponse && paymentResponse.status === 'VALID') {
+const verifyPayment = async (tranId: string, bookingId: string, paymentResponse: any) => {
+    // ১. পেমেন্ট স্ট্যাটাস VALID কি না চেক করা
+    if (paymentResponse && paymentResponse.status === 'VALID') {
         
-//         // ২. ট্রানজেকশন সফল হলে ডাটাবেজ আপডেট (বুকিং স্ট্যাটাস এবং পেমেন্ট রেকর্ড)
-//         const result = await prisma.$transaction(async (tx) => {
-//             // বুকিং স্ট্যাটাস আপডেট
-//             await tx.booking.update({
-//                 where: { id: bookingId },
-//                 data: { paymentStatus: "PAID" }
-//             });
+        // ২. ট্রানজেকশন সফল হলে শুধু পেমেন্ট টেবিলে রেকর্ড তৈরি হবে
+        const result = await prisma.payment.create({
+            data: {
+                transactionId: tranId,
+                bookingId: bookingId,
+                amount: Number(paymentResponse.amount),
+                status: "PAID", // আপনার পেমেন্ট মডেলের এনাম বা স্ট্রিং অনুযায়ী দিবেন
+                method: paymentResponse.card_type // যেমন: bkash, visa, mastercard ইত্যাদি
+            }
+        });
 
-//             // পেমেন্ট রেকর্ড তৈরি (যদি পেমেন্ট মডেল থাকে)
-//             return await tx.payment.create({
-//                 data: {
-//                     transactionId: tranId,
-//                     bookingId: bookingId,
-//                     amount: Number(paymentResponse.amount),
-//                     paymentStatus: "COMPLETED",
-//                     method: paymentResponse.card_type
-//                 }
-//             });
-//         });
+        return { success: true, data: result };
+    }
 
-//         return { success: true, data: result };
-//     }
+    return { success: false, message: "Payment verification failed" };
+}
 
-//     return { success: false, message: "Payment verification failed" };
-// }
 
 /**
  * ইউজারের পেমেন্ট হিস্টোরি ডাটাবেজ থেকে আনা
@@ -125,7 +114,7 @@ const initialPayement = async (bookingId: string, user: User) => {
 
 export const paymentService = {
     initialPayement,
-    // verifyPayment,
+    verifyPayment,
     // getPaymentHistoryFromDB,
     // getPaymentDetailsFromDB
 }
