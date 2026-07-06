@@ -12,11 +12,11 @@ model Property {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relations
   landlordId  String
   landlord    User      @relation("LandlordProperties", fields: [landlordId], references: [id], onDelete: Cascade)
   
-  // Clean relational categories constraint model mapping block
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
 
   bookings    Booking[]
   reviews     Review[]
@@ -32,8 +32,7 @@ model Category {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
-  // Relation: Ekti category-r bhetor onek property thakte pare
- // properties Property[]
+  properties Property[]
 
   @@map("categories")
 }

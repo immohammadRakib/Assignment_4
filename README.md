@@ -6,7 +6,7 @@ Assignment 4
 The complete Postman Collection is included in the root directory as `collection.json`. You can easily import it into Postman.
 
 ### Base URL
-`http://localhost:5000/api/v1`
+`http://localhost:3000/api/`
 
 ### Endpoints Summary
 
