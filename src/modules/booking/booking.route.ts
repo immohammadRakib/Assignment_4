@@ -1,20 +1,46 @@
 import express from 'express';
 import { BookingController } from './booking.controller';
-import { auth } from '../../middleware/auth'; // Apnar project layer location validation rule check korun
+import { auth } from '../../middleware/auth';
 import { Role } from '../../../generated/prisma/enums';
 
-const router = express.Router();
+const rentalRouter = express.Router();
 
-// Shudhu Tenant-ra rental application generate request korte parbe
-router.post('/request', auth( Role.TENANT ), BookingController.createBookingRequest);
+// 📥 Submit a rental request
+rentalRouter.post(
+    '/', 
+    auth(Role.TENANT), 
+    BookingController.createBookingRequest
+);
 
-// Logged-in credentials match loop validation data pull logic
-router.get('/my-bookings', auth( Role.TENANT, Role.LANDLORD ), BookingController.getMyBookings);
+// 📜 Get user's own rental requests history
+rentalRouter.get(
+    '/', 
+    auth(Role.TENANT), 
+    BookingController.getMyBookings
+);
 
-// Individual index key filter data single item record fetch block
-router.get('/:id', auth( Role.TENANT, Role.LANDLORD, Role.ADMIN ), BookingController.getBookingById);
 
-// Landlord dynamic status toggle processing path selector
-router.patch('/status/:id', auth( Role.LANDLORD), BookingController.handleBookingStatusUpdate);
 
-export const BookingRoutes = router;
+rentalRouter.get(
+    '/landlord/requests', 
+    auth(Role.LANDLORD), 
+    BookingController.getMyBookings
+);
+
+// ৫. Approve or reject a rental request -> PATCH /api/landlord/requests/:id
+rentalRouter.patch(
+    '/landlord/requests/:id', 
+    auth(Role.LANDLORD), 
+    BookingController.handleBookingStatusUpdate
+);
+
+
+
+// 🔍 Get individual rental request details
+rentalRouter.get(
+    '/:id', 
+    auth(Role.TENANT, Role.LANDLORD, Role.ADMIN), 
+    BookingController.getBookingById
+);
+
+export const RentalRoutes = rentalRouter;

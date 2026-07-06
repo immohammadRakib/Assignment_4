@@ -51,7 +51,7 @@ const getBookingById = catchAsync(async (req: Request, res: Response, next: Next
 
 const handleBookingStatusUpdate = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const landlordId = req.user?.id;
-    const { status } = req.body; // Body payload tracking target (APPROVED / REJECTED)
+    const { status } = req.body; 
     const id = req.params.id;
 
     if (!id) {

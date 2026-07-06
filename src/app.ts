@@ -4,7 +4,7 @@ import config from "./config";
 import cookieParser from "cookie-parser";
 import { userRoute } from './modules/user/user.route';
 import { authRoutes } from './modules/auth/auth.route';
-import { BookingRoutes } from "./modules/booking/booking.route";
+import { RentalRoutes } from "./modules/booking/booking.route";
 import { PropertyRoutes } from "./modules/property/property.route";
 
 
@@ -30,8 +30,7 @@ app.use('/api/auth', userRoute);
 app.use('/api/auth', authRoutes);
 
 app.use('/api', PropertyRoutes); 
-app.use('/api/bookings', BookingRoutes); 
-
+app.use('/api/rentals', RentalRoutes);
 
 
 
