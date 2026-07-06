@@ -3,6 +3,10 @@ import config from "../../config"
 import axios from "axios"
 import { prisma } from "../../lib/prisma";
 
+
+
+
+// Payement initiation method for a booking
 const initialPayement = async (bookingId: string, user: User) => {
     const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
@@ -54,21 +58,19 @@ const initialPayement = async (bookingId: string, user: User) => {
     return { GatewayPageURL, tranId };
 }
 
-/**
- * SSLCommerz পেমেন্ট ভেরিফাই করার মেথড
- */
+
+
+
+// Verify payment after redirection from SSLCommerz
 const verifyPayment = async (tranId: string, bookingId: string, paymentResponse: any) => {
-    // ১. পেমেন্ট স্ট্যাটাস VALID কি না চেক করা
     if (paymentResponse && paymentResponse.status === 'VALID') {
-        
-        // ২. ট্রানজেকশন সফল হলে শুধু পেমেন্ট টেবিলে রেকর্ড তৈরি হবে
         const result = await prisma.payment.create({
             data: {
                 transactionId: tranId,
                 bookingId: bookingId,
                 amount: Number(paymentResponse.amount),
-                status: "PAID", // আপনার পেমেন্ট মডেলের এনাম বা স্ট্রিং অনুযায়ী দিবেন
-                method: paymentResponse.card_type // যেমন: bkash, visa, mastercard ইত্যাদি
+                status: "PAID", 
+                method: paymentResponse.card_type
             }
         });
 
@@ -79,42 +81,48 @@ const verifyPayment = async (tranId: string, bookingId: string, paymentResponse:
 }
 
 
-/**
- * ইউজারের পেমেন্ট হিস্টোরি ডাটাবেজ থেকে আনা
- */
-// const getPaymentHistoryFromDB = async (userId: string) => {
-//     return await prisma.payment.findMany({
-//         where: {
-//             booking: {
-//                 tenantId: userId
-//             }
-//         },
-//         include: {
-//             booking: {
-//                 include: { property: true }
-//             }
-//         },
-//         orderBy: { createdAt: 'desc' }
-//     });
-// }
 
-/**
- * নির্দিষ্ট পেমেন্ট ডিটেইলস আনা
- */
-// const getPaymentDetailsFromDB = async (id: string) => {
-//     return await prisma.payment.findUniqueOrThrow({
-//         where: { id },
-//         include: {
-//             booking: {
-//                 include: { property: true, tenant: true }
-//             }
-//         }
-//     });
-// }
+
+
+// Get payment history for a specific user
+const getPaymentHistoryFromDB = async (userId: string) => {
+    return await prisma.payment.findMany({
+        where: {
+            booking: {
+                tenantId: userId
+            }
+        },
+        include: {
+            booking: {
+                include: { property: true }
+            }
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+}
+
+
+
+
+// Get specific payment details by ID
+const getPaymentDetailsFromDB = async (id: string) => {
+    return await prisma.payment.findUniqueOrThrow({
+        where: { id },
+        include: {
+            booking: {
+                include: { property: true, tenant: true }
+            }
+        }
+    });
+}
+
+
+
+
 
 export const paymentService = {
     initialPayement,
     verifyPayment,
-    // getPaymentHistoryFromDB,
-    // getPaymentDetailsFromDB
+    getPaymentHistoryFromDB,
+    getPaymentDetailsFromDB
 }
