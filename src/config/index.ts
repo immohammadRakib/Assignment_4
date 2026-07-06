@@ -13,5 +13,6 @@ export default {
     jwt_refresh_secret: process.env.JWT_REFRESH_SECRET || "",
     jwt_access_expiration: process.env.JWT_ACCESS_EXPIRATION || "1d",
     jwt_refresh_expiration: process.env.JWT_REFRESH_EXPIRATION || "7d",
+    ssl_commerz_store_id: process.env.SSL_COMERZ_STORE_ID || "",
+    ssl_commerz_store_password: process.env.SSL_COMERZ_STORE_PASSWORD || "",
 }
-    

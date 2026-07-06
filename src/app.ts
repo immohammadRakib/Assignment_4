@@ -6,6 +6,7 @@ import { userRoute } from './modules/user/user.route';
 import { authRoutes } from './modules/auth/auth.route';
 import { RentalRoutes } from "./modules/booking/booking.route";
 import { PropertyRoutes } from "./modules/property/property.route";
+import { PaymentRoutes } from "./modules/payments/payments.route";
 
 
 
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', PropertyRoutes); 
 app.use('/api/rentals', RentalRoutes);
 
+app.use('/api/payments', PaymentRoutes); 
 
 
 export default app;
