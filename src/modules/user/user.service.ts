@@ -10,6 +10,10 @@ import { RegisterUserPayload } from "../../interface/user.interface";
 
 const registerUserIntoDB = async ( payload: RegisterUserPayload ) => {
     const { name, email, password, role, profilePhoto } = payload;
+
+    if (payload.role === "ADMIN") {
+        throw new Error("Registration as an ADMIN is strictly prohibited!");
+    }
     
     const userExists = await prisma.user.findUnique({ where: { email } }); 
      if (userExists) {

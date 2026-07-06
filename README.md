@@ -1,5 +1,13 @@
 Assignment 4 
 
+### 🔑 Default Admin Credentials (For Testing)
+To test admin-only features (like creating categories), please use the following credentials:
+
+* **Email:** "Sabiha13@example.com",
+* **Password:** "sabiha404?"
+
+
+
 
 ## 🚀 API Documentation
 

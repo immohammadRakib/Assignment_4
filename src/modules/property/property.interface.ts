@@ -7,6 +7,7 @@ export interface ICreatePropertyPayload {
     city: string;
     pricePerDay: number; 
     images: string[];
+    categoryId: string; 
     isAvailable?: boolean;
 }
 
@@ -17,6 +18,7 @@ export interface IUpdatePropertyPayload {
     city?: string;
     pricePerDay?: number;
     images?: string[];
+    categoryId?: string; 
     isAvailable?: boolean;
 }
 
