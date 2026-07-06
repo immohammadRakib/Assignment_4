@@ -27,7 +27,7 @@ const getAllProperties = async () => {
                         password : true
                     }
                 },
-                comments : true
+                bookings : true
             }
         }
     );
@@ -107,7 +107,7 @@ const getPropertyById = async (propertyId : string) => {
                         }
                     },
 
-                    comments: {
+                    bookings: {
                         where: {
                             status: BookingStatus.CONFIRMED
                         },
@@ -154,7 +154,7 @@ const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayl
                     password: true
                 }
             },
-            comments: true
+            bookings: true
         }
     })
 

@@ -50,7 +50,10 @@ const getPropertyById = catchAsync(async (req : Request, res : Response, next : 
 
 const updateProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
     const landlordId = req.user?.id
-    const isAdmin = req.user?.role === "ADMIN";
+    const isLandlord = req.user?.role === "LANDLORD";
+    if (!landlordId) {
+    throw new Error("Unauthorized access. Landlord ID missing.");
+}
 
     const propertyId = req.params.propertyId;
 
@@ -60,7 +63,7 @@ const updateProperty = catchAsync(async (req : Request, res : Response, next : N
 
     const payload = req.body;
 
-    const result = await PropertyService.updateProperty(propertyId as string, payload, landlordId as string, isAdmin)
+    const result = await PropertyService.updateProperty(propertyId as string, payload, landlordId as string, isLandlord);
 
     sendResponse(res, {
         success: true,
@@ -72,14 +75,17 @@ const updateProperty = catchAsync(async (req : Request, res : Response, next : N
 
 const deleteProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
     const landlordId = req.user?.id
-    const isAdmin = req.user?.role === "ADMIN";
+    const isLandlord = req.user?.role === "LANDLORD";
+    if (!landlordId) {
+    throw new Error("Unauthorized access. Landlord ID missing.");
+}
 
     const propertyId = req.params.propertyId;
     if (!propertyId) {
         throw new Error("Property Id Required In Params")
     }
 
-    await PropertyService.deleteProperty(propertyId as string, landlordId as string, isAdmin)
+    await PropertyService.deleteProperty(propertyId as string, landlordId as string, isLandlord)
 
     sendResponse(res, {
         success: true,
