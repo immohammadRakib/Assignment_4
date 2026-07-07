@@ -20,7 +20,6 @@ router.post(
 // Payment Confirmation Route (Accessible by TENANT, LANDLORD, and ADMIN roles)
 router.post(
     '/confirm',
-    auth(Role.TENANT, Role.LANDLORD, Role.ADMIN),
     PaymentController.confirmPayment
 );
 
