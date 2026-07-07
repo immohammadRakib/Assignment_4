@@ -16,7 +16,7 @@
   "main": "server.ts",
     "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "prisma generate && npx esbuild src/server.ts --bundle --platform=node --format=esm --outfile=dist/server.js", 
+    "build": "prisma generate && tsc", 
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
