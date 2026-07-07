@@ -8,6 +8,9 @@ import { RentalRoutes } from "./modules/booking/booking.route";
 import { PropertyRoutes } from "./modules/property/property.route";
 import { PaymentRoutes } from "./modules/payments/payments.route";
 import { CategoryRoutes } from "./modules/categories/category.route";
+import { ReviewRoutes } from "./modules/review/review.route";
+import { globalErrorHandler } from "./middleware/globalErrorHandler";
+import { notFound } from "./middleware/notFound";
 
 
 
@@ -36,7 +39,13 @@ app.use('/api/rentals', RentalRoutes);
 
 app.use('/api/payments', PaymentRoutes); 
 
+app.use("/api/reviews", ReviewRoutes);
 app.use("/api/categories", CategoryRoutes);
+
+
+
+app.use(notFound);
+app.use(globalErrorHandler);
 
 
 export default app;
