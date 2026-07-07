@@ -5,7 +5,7 @@ import config from "../config";
 import { prisma } from "../lib/prisma";
 import { catchAsync } from "../utils/catchAsync";
 import { jwtUtils } from "../utils/jwt";
-import httpStatus from "http-status"; // 👈 HTTP Status ব্যবহার করার জন্য (ভালো প্র্যাকটিস)
+import httpStatus from "http-status"; 
 
 declare global {
     namespace Express {
@@ -52,7 +52,7 @@ export const auth = (...requiredRoles: Role[]) => {
 
         const { email, name, id, role } = verifiedToken.data as JwtPayload;
 
-        // ৩. রোল বা পারমিশন চেক করা
+        // Role and Permission Check
         if (requiredRoles.length && !requiredRoles.includes(role)) {
             return res.status(httpStatus.FORBIDDEN).json({
                 success: false,
@@ -61,10 +61,10 @@ export const auth = (...requiredRoles: Role[]) => {
             });
         }
 
-        // ৪. ডেটাবেজ চেক (শুধুমাত্র UNIQUE ID দিয়ে সার্চ করতে হবে) ✅
+        // Database Check 
         const user = await prisma.user.findUnique({
             where: {
-                id: id // 👈 শুধু ID দিয়ে খুঁজবেন, name বা email দিয়ে নয়
+                id: id 
             }
         });
 
@@ -81,7 +81,7 @@ export const auth = (...requiredRoles: Role[]) => {
             return res.status(httpStatus.FORBIDDEN).json({
                 success: false,
                 statusCode: httpStatus.FORBIDDEN,
-                message: "Your account has been blocked. Please contact support."
+                message: "Your account has been blocked. Please contact admin"
             });
         }
 

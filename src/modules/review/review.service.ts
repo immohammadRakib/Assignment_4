@@ -65,8 +65,7 @@ const getPropertyReviews = async (propertyId: string) => {
             tenant: {
                 select: {
                     id: true,
-                    name: true,
-                    images: true 
+                    name: true
                 }
             }
         }

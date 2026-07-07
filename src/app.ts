@@ -11,6 +11,7 @@ import { CategoryRoutes } from "./modules/categories/category.route";
 import { ReviewRoutes } from "./modules/review/review.route";
 import { globalErrorHandler } from "./middleware/globalErrorHandler";
 import { notFound } from "./middleware/notFound";
+import { AdminRoutes } from "./modules/admin/admin.route";
 
 
 
@@ -41,6 +42,8 @@ app.use('/api/payments', PaymentRoutes);
 
 app.use("/api/reviews", ReviewRoutes);
 app.use("/api/categories", CategoryRoutes);
+
+app.use('/api/admin', AdminRoutes);
 
 
 

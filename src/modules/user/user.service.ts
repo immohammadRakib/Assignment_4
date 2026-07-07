@@ -1,13 +1,13 @@
-import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../../lib/prisma";  
-import httpStatus from "http-status";
 import config from "../../config";
 import { RegisterUserPayload } from "../../interface/user.interface";
 
 
 
 
+
+// Register User
 const registerUserIntoDB = async ( payload: RegisterUserPayload ) => {
     const { name, email, password, role, profilePhoto } = payload;
 
@@ -36,13 +36,6 @@ const registerUserIntoDB = async ( payload: RegisterUserPayload ) => {
           }
      });
 
-    // await prisma.profile.create({
-    //     data: {
-    //             userId: newUser.id,
-    //             profilePhoto
-    //     }
-    //  })
-
     const user = await prisma.user.findUnique({
         where: {
             id: newUser.id
@@ -58,6 +51,9 @@ const registerUserIntoDB = async ( payload: RegisterUserPayload ) => {
 }
 
 
+
+
+// Profile
 const getMyProfileIntoDB = async ( userId: string ) => {
     const user = await prisma.user.findUniqueOrThrow({
         where: { id: userId },
@@ -68,8 +64,12 @@ const getMyProfileIntoDB = async ( userId: string ) => {
     return user;
 }
 
+
+
+
+// Update Profile
 const updateMyProdileIntoDB = async ( userId: string, payload: any ) => {
-    const { name, email, profilePhoto, bio } = payload;
+    const { name, email, profileImage, bio, phone, address } = payload;
 
     const updatedUser = await prisma.user.update({
         where: { id : userId },
@@ -78,7 +78,9 @@ const updateMyProdileIntoDB = async ( userId: string, payload: any ) => {
             email,
             profile : {
                 update: {
-                    profilePhoto,
+                    phone,
+                    address,
+                    profileImage,
                     bio
                 }
             },
@@ -93,6 +95,10 @@ const updateMyProdileIntoDB = async ( userId: string, payload: any ) => {
     })
     return updatedUser;
 }
+
+
+
+
 
 export const userService = {
     registerUserIntoDB,
