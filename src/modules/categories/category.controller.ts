@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { CategoryService } from "./category.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import { JwtPayload } from "jsonwebtoken";
 
 
 
@@ -34,7 +35,44 @@ const getAllCategories = catchAsync(async (req: Request, res: Response) => {
 
 
 
+// Delete A Category
+const deleteCategory = catchAsync( async ( req: Request, res: Response ) => {
+    const { id } = req.params
+    const result = await CategoryService.deleteCategory( id as string )
+
+    sendResponse( res, {
+        statusCode: 200,
+        success: true,
+        message: "Categories fetched successfully",
+        data: result,
+    })
+})
+
+
+
+
+// Get All Property Under a Category
+const getCategoryWithPropertyCount = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const result = await CategoryService.getCategoryWithPropertyCount( id as string );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Category with property count retrieved successfully!",
+    data: result,
+  });
+});
+
+
+
+
+
+
 export const CategoryController = {
   createCategory,
   getAllCategories,
+  deleteCategory,
+  getCategoryWithPropertyCount
 };

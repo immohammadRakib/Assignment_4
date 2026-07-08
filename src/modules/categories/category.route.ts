@@ -12,7 +12,12 @@ router.post(
   CategoryController.createCategory
 );
 
+// GET endpoint to get property count under a category
+router.get("/:id", CategoryController.getCategoryWithPropertyCount);
+
 
 router.get("/", CategoryController.getAllCategories);
+router.delete("/:id", auth( Role.ADMIN ), CategoryController.deleteCategory);
+
 
 export const CategoryRoutes = router;

@@ -6,15 +6,17 @@ import { prisma } from "../../lib/prisma";
 
 
 // Create a new category in the database
-const createCategory = async (payload: ICategory): Promise<ICategory> => {
+const createCategory = async (payload: ICategory) => {
   const result = await prisma.category.create({
     data: payload,
   });
   return result;
 };
 
-// get all categories with the count of properties associated with each category
-const getAllCategories = async (): Promise<ICategory[]> => {
+
+
+// get all categories 
+const getAllCategories = async () => {
   const result = await prisma.category.findMany({
     include: {
       _count: {
@@ -27,9 +29,47 @@ const getAllCategories = async (): Promise<ICategory[]> => {
 
 
 
+// Delete Category
+const deleteCategory = async (id: string) => {
+  const isExist = await prisma.category.findUnique({
+    where: { id },
+  });
+
+  if (!isExist) {
+    throw new Error("Category not found!");
+  }
+
+  const result = await prisma.category.delete({
+    where: { id }
+  });
+  return result;
+};
+
+
+// Get All Property Under a Category
+const getCategoryWithPropertyCount = async (id: string) => {
+  const result = await prisma.category.findUnique({
+    where: { id },
+    include: {
+        _count: {
+            select: { properties: true }, 
+        },
+        properties: true,
+    },
+  });
+
+  if (!result) {
+    throw new Error("Category not found!");
+  }
+
+  return result;
+};
+
 
 
 export const CategoryService = {
   createCategory,
   getAllCategories,
+  deleteCategory,
+  getCategoryWithPropertyCount
 };
