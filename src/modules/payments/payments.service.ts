@@ -64,21 +64,47 @@ const initialPayement = async (bookingId: string, user: User) => {
 // Verify payment after redirection from SSLCommerz
 const verifyPayment = async (tranId: string, bookingId: string, paymentResponse: any) => {
     if (paymentResponse && paymentResponse.status === 'VALID') {
-        const result = await prisma.payment.create({
-            data: {
-                transactionId: tranId,
-                bookingId: bookingId,
-                amount: Number(paymentResponse.amount),
-                status: "PAID", 
-                method: paymentResponse.card_type
-            }
+        const transactionResult = await prisma.$transaction(async (tx) => {
+            
+            const paymentResult = await tx.payment.create({
+                data: {
+                    transactionId: tranId,
+                    bookingId: bookingId,
+                    amount: Number(paymentResponse.amount),
+                    status: "PAID", 
+                    method: paymentResponse.card_type
+                }
+            });
+
+            const currentBooking = await tx.booking.update({
+                where: { id: bookingId },
+                data: {
+                    status: "PAID"
+                }
+            });
+
+            await tx.booking.updateMany({
+                where: {
+                    propertyId: currentBooking.propertyId,
+                    id: { not: bookingId }, 
+                    status: "PENDING",
+                    startDate: { lte: currentBooking.endDate },
+                    endDate: { gte: currentBooking.startDate }
+                },
+                data: {
+                    status: "REJECTED" 
+                }
+            });
+
+            return paymentResult;
         });
 
-        return { success: true, data: result };
+        return { data: transactionResult };
     }
 
     return { success: false, message: "Payment verification failed" };
-}
+};
+
 
 
 
