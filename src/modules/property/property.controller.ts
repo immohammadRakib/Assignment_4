@@ -133,16 +133,6 @@ const deleteProperty = catchAsync(async ( req : Request, res : Response ) => {
     })
 })
 
-const getPropertiesStats = catchAsync(async ( req : Request, res : Response ) => {
-    const result = await PropertyService.getPropertiesStats();
-
-    sendResponse(res, {
-        success: true,
-        statusCode: httpStatus.OK,
-        message: "Property stats retrieved successfully",
-        data: result
-    })
-})
 
 
 
@@ -163,13 +153,39 @@ const getMyProperties = catchAsync(async ( req : Request, res : Response ) => {
 
 
 
+//Property Stats for Landlord and Admin
+const getDashboardStats = catchAsync(async (req: Request, res: Response) => {
+    const role = req.user?.role;
+    const userId = req.user?.id;
+    let result;
+
+    if (role === "ADMIN") {
+        result = await PropertyService.getAdminDashboardStats();
+    } else if (role === "LANDLORD") {
+        result = await PropertyService.getLandlordDashboardStats(userId as string);
+    } else {
+        throw new Error("You are not authorized to view dashboard stats!");
+    }
+
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: `${role} Dashboard stats fetched successfully`,
+        data: result
+    });
+});
+
+
+
+
+
 export const PropertyController = {
     createProperty,
     getAllProperties,
     getPropertyById,
     updateProperty,
     deleteProperty,
-    getPropertiesStats,
+    getDashboardStats,
     getMyProperties,
     toggleAvailability
 }

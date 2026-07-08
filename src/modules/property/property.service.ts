@@ -191,70 +191,6 @@ const deleteProperty = async (propertyId: string, ownerId: string, isAdmin: bool
 }
 
 
-// Get Property Stats
-const getPropertiesStats = async () => {
-    const transactionResult = await prisma.$transaction(
-        async (tx) => {
-            const [
-                totalProperties,
-                totalPublishedProperties,
-                totalDraftProperties,
-                totalArchivedProperties,
-                totalComments,
-                totalApprovedComments,
-                totalRejectedComments,
-                totalPropertyViewsAggregate
-            ] = await Promise.all([
-                await tx.property.count(),
-                await tx.property.count({
-                    where: {
-                        status: PropertyStatus.AVAILABLE
-                    }
-                }),
-                await tx.property.count({
-                    where: {
-                        status: PropertyStatus.PENDING
-                    }
-                }),
-                await tx.property.count({
-                    where: {
-                        status: PropertyStatus.RENTED
-                    }
-                }),
-                await tx.booking.count(),
-                await tx.booking.count({
-                    where: {
-                        status: BookingStatus.CONFIRMED
-                    }
-                }),
-                await tx.booking.count({
-                    where: {
-                        status: BookingStatus.CANCELLED
-                    }
-                }),
-                await tx.property.aggregate({
-                    _sum: {
-                        views: true
-                    }
-                })
-            ]);
-
-
-            return {
-                totalProperties,
-                totalPublishedProperties,
-                totalDraftProperties,
-                totalArchivedProperties,
-                totalComments,
-                totalApprovedComments,
-                totalRejectedComments,
-                totalPropertyViews : totalPropertyViewsAggregate._sum.views
-            }
-        }
-    );
-
-    return transactionResult
-}
 
 
 // Get Own Properties
@@ -289,13 +225,109 @@ const getMyProperties = async (landlordId : string) => {
 
 }
 
+
+
+
+// Landlord Stats For Dashboard
+const getLandlordDashboardStats = async (landlordId: string) => {
+    const [
+        myTotalProperties,
+        myAvailableProperties,
+        myTotalBookings,
+        myPendingRequests,
+        myConfirmedBookings,
+        myTotalReviews,
+        myPropertyViewsAggregate,
+        myTotalEarningsAggregate
+    ] = await Promise.all([
+
+        prisma.property.count({ where: { landlordId } }),
+        prisma.property.count({ where: { landlordId, isAvailable: true } }),
+        prisma.booking.count({ where: { property: { landlordId } } }),
+
+        prisma.booking.count({ where: { property: { landlordId }, status: "PENDING" } }),
+        prisma.booking.count({ where: { property: { landlordId }, status: "CONFIRMED" } }),
+ 
+        prisma.review.count({ where: { property: { landlordId } } }),
+        
+        prisma.property.aggregate({
+            where: { landlordId },
+            _sum: { views: true }
+        }),
+        
+        prisma.booking.aggregate({
+            where: {
+                property: { landlordId },
+                    status: "PAID" 
+            },
+            _sum: {
+                totalPrice: true 
+            }
+        })
+
+    ]);
+
+    return {
+        myTotalProperties,
+        myAvailableProperties,
+        myTotalBookings,
+        myPendingRequests,
+        myConfirmedBookings,
+        myTotalReviews,
+        myPropertyViews: myPropertyViewsAggregate._sum.views || 0 ,
+        myTotalEarningsAggregate
+    };
+};
+
+
+
+
+// Admin Stats For Dashboard
+const getAdminDashboardStats = async () => {
+    const [
+        totalTenants,
+        totalLandlords,
+        totalBannedUsers,
+        totalProperties,
+        totalCategories,
+        totalRentalRequests,
+        totalConfirmedBookings
+    ] = await Promise.all([
+
+        prisma.user.count({ where: { role: "TENANT" } }),
+        prisma.user.count({ where: { role: "LANDLORD" } }),
+        prisma.user.count({ where: { activeStatus: "ACTIVE" } }), 
+        
+        prisma.property.count(),
+        prisma.category.count(),
+
+        prisma.booking.count(),
+        prisma.booking.count({ where: { status: "CONFIRMED" } })
+    ]);
+
+    return {
+        totalTenants,
+        totalLandlords,
+        totalBannedUsers,
+        totalProperties,
+        totalCategories,
+        totalRentalRequests,
+        totalConfirmedBookings
+    };
+};
+
+
+
+
+
 export const PropertyService = {
     createProperty,
     getAllProperties,
     getPropertyById,
     updateProperty,
     deleteProperty,
-    getPropertiesStats,
     getMyProperties,
-    updateAvailability
+    updateAvailability,
+    getAdminDashboardStats,
+    getLandlordDashboardStats
 }
