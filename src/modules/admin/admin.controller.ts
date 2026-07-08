@@ -4,6 +4,11 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { ActiveStatus } from "../../../generated/prisma/client";
 
+
+
+
+
+// Get All Users
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
     const result = await AdminService.getAllUsers();
     sendResponse(res, {
@@ -14,6 +19,8 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+
+// Update User Status
 const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { status } = req.body;
@@ -26,6 +33,8 @@ const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+
+// Get All Property
 const getAllProperties = catchAsync(async (req: Request, res: Response) => {
     const result = await AdminService.getAllProperties();
     sendResponse(res, {
@@ -36,6 +45,8 @@ const getAllProperties = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+
+// Get All Rentals
 const getAllRentals = catchAsync(async (req: Request, res: Response) => {
     const result = await AdminService.getAllRentals();
     sendResponse(res, {
@@ -45,6 +56,10 @@ const getAllRentals = catchAsync(async (req: Request, res: Response) => {
         data: result
     });
 });
+
+
+
+
 
 export const AdminController = {
     getAllUsers,

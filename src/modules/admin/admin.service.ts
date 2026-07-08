@@ -1,14 +1,19 @@
 import { ActiveStatus } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
-// ১. সব ইউজার গেট করা
+
+
+
+
+
+// Get All User 
 const getAllUsers = async () => {
     return await prisma.user.findMany({
         orderBy: { createdAt: 'desc' }
     });
 };
 
-// ২. ইউজার স্ট্যাটাস আপডেট (BAN/ACTIVATE)
+// User status Active/Blocked
 const updateUserStatus = async (id: string, status: ActiveStatus) => {
     return await prisma.user.update({
         where: { id },
@@ -16,7 +21,7 @@ const updateUserStatus = async (id: string, status: ActiveStatus) => {
     });
 };
 
-// ৩. সব প্রপার্টি গেট করা
+// Get All Property
 const getAllProperties = async () => {
     return await prisma.property.findMany({
         include: {
@@ -26,7 +31,7 @@ const getAllProperties = async () => {
     });
 };
 
-// ৪. সব রেন্টাল রিকোয়েস্ট (Bookings) গেট করা
+// All Rental Request
 const getAllRentals = async () => {
     return await prisma.booking.findMany({
         include: {
@@ -36,6 +41,9 @@ const getAllRentals = async () => {
         orderBy: { createdAt: 'desc' }
     });
 };
+
+
+
 
 export const AdminService = {
     getAllUsers,
