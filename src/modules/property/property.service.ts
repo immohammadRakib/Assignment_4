@@ -2,6 +2,10 @@ import { BookingStatus, PropertyStatus } from "../../../generated/prisma/enums"
 import { prisma } from "../../lib/prisma"
 import { ICreatePropertyPayload, IUpdatePropertyPayload } from "./property.interface"
 
+
+
+
+// Create Property
 const createProperty = async (payload : ICreatePropertyPayload, userId : string) => {
     const imagesData = typeof payload.images === 'string' 
         ? [payload.images] 
@@ -18,70 +22,47 @@ const createProperty = async (payload : ICreatePropertyPayload, userId : string)
     return result
 }
 
-const getAllProperties = async () => {
-    const properties = await prisma.property.findMany(
-        {
-            include : {
-                landlord : {
-                    omit : {
-                        password : true
-                    }
-                },
-                bookings : true
-            }
+
+
+// Get All Properties
+const getAllProperties = async ( query: Record<string, any> ) => {
+    const { role, landlordId } = query;
+
+    let whereCondition: any = {
+        status: "APPROVED",
+        isAvailable: true
+    };
+
+    if (role === "ADMIN") {
+        whereCondition = {}; 
+    }
+
+    if (role === "LANDLORD" && landlordId) {
+        whereCondition = {
+            landlordId: landlordId 
+        };
+    }
+
+    const properties = await prisma.property.findMany({
+        where: whereCondition, 
+        include: {
+            landlord: {
+                omit: {
+                    password: true
+                }
+            },
+            bookings: true
         }
-    );
+    });
 
-    return properties
-}
+    return properties;
+};
 
+
+
+
+// Get Property By Id 
 const getPropertyById = async (propertyId : string) => {
-
-    // await prisma.property.update({
-    //     where : {
-    //         id : propertyId,
-    //     },
-    //     data : {
-    //         views : {
-    //             increment : 1
-    //         },
-    //     }
-    // })
-
-    // throw new Error("Fake Error")
-
-    // const property = await prisma.property.findUniqueOrThrow({
-    //     where : {
-    //         id : propertyId
-    //     },
-
-    //     include : {
-    //         landlord : {
-    //             omit : {
-    //                 password : true
-    //             }
-    //         },
-
-    //         comments : {
-    //             where : {
-    //                 status : CommentStatus.APPROVED
-    //             },
-
-    //             orderBy : {
-    //                 createdAt : "desc"
-    //             }
-    //         },
-
-    //         _count : {
-    //             select : {
-    //                 comments : true
-    //             }
-    //         }
-    //     }
-    // })
-
-    // return property
-
     const transactionResult = await prisma.$transaction(
         async (tx) => {
             await tx.property.update({
@@ -94,7 +75,7 @@ const getPropertyById = async (propertyId : string) => {
                     },
                 }
             });
-            // throw new Error("fake error")
+
             const property = await tx.property.findUniqueOrThrow({
                 where: {
                     id: propertyId
@@ -132,6 +113,9 @@ const getPropertyById = async (propertyId : string) => {
 
 }
 
+
+
+// Update Property
 const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayload, ownerId : string, isAdmin : boolean) => {
     const property = await prisma.property.findUniqueOrThrow({
         where : {
@@ -163,7 +147,7 @@ const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayl
 
 
 
-
+// Update Availability Status
 const updateAvailability = async (id: string, availabilityStatus: boolean) => {
   const property = await prisma.property.findUnique({
     where: { id },
@@ -186,9 +170,7 @@ const updateAvailability = async (id: string, availabilityStatus: boolean) => {
 
 
 
-
-
-
+// Delete Property
 const deleteProperty = async (propertyId: string, ownerId: string, isAdmin: boolean) => {
     const property = await prisma.property.findUniqueOrThrow({
         where: {
@@ -208,6 +190,8 @@ const deleteProperty = async (propertyId: string, ownerId: string, isAdmin: bool
 
 }
 
+
+// Get Property Stats
 const getPropertiesStats = async () => {
     const transactionResult = await prisma.$transaction(
         async (tx) => {
@@ -272,6 +256,8 @@ const getPropertiesStats = async () => {
     return transactionResult
 }
 
+
+// Get Own Properties
 const getMyProperties = async (landlordId : string) => {
 
     const result = await prisma.property.findMany({

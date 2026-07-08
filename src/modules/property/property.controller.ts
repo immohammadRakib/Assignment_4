@@ -4,12 +4,16 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { PropertyService } from "./property.service";
 
-const createProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+
+
+
+// Create Property 
+const createProperty = catchAsync(async ( req : Request, res : Response ) => {
     const id = req.user?.id
 
     const payload = req.body;
 
-    const result = await PropertyService.createProperty(payload, id as string);
+    const result = await PropertyService.createProperty( payload, id as string );
 
 
     sendResponse(res, {
@@ -20,8 +24,16 @@ const createProperty = catchAsync(async (req : Request, res : Response, next : N
     })
 })
 
-const getAllProperties = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
-    const result = await PropertyService.getAllProperties();
+
+
+// Get All Properties
+const getAllProperties = catchAsync(async ( req : Request, res : Response ) => {
+    const query = {
+        role: req.user?.role,       
+        landlordId: req.user?.id   
+    };
+    
+    const result = await PropertyService.getAllProperties( query );
 
     sendResponse(res, {
         success : true,
@@ -31,14 +43,17 @@ const getAllProperties = catchAsync(async (req : Request, res : Response, next :
     })
 })
 
-const getPropertyById = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+
+
+// Get Properties By Id
+const getPropertyById = catchAsync(async ( req : Request, res : Response ) => {
     const propertyId = req.params.propertyId;
 
     if(!propertyId){
         throw new Error("Property Id Required In Params")
     }
 
-    const result = await PropertyService.getPropertyById(propertyId as string);
+    const result = await PropertyService.getPropertyById( propertyId as string );
 
     sendResponse(res, {
         success : true,
@@ -48,7 +63,10 @@ const getPropertyById = catchAsync(async (req : Request, res : Response, next : 
     })
 })
 
-const updateProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+
+
+// Update Property By Id
+const updateProperty = catchAsync(async ( req : Request, res : Response ) => {
     const landlordId = req.user?.id
     const isLandlord = req.user?.role === "LANDLORD";
     if (!landlordId) {
@@ -63,7 +81,7 @@ const updateProperty = catchAsync(async (req : Request, res : Response, next : N
 
     const payload = req.body;
 
-    const result = await PropertyService.updateProperty(propertyId as string, payload, landlordId as string, isLandlord);
+    const result = await PropertyService.updateProperty( propertyId as string, payload, landlordId as string, isLandlord );
 
     sendResponse(res, {
         success: true,
@@ -74,7 +92,9 @@ const updateProperty = catchAsync(async (req : Request, res : Response, next : N
 })
 
 
-const toggleAvailability = catchAsync(async (req: Request, res: Response) => {
+
+// Toggle Property Availability
+const toggleAvailability = catchAsync(async ( req: Request, res: Response ) => {
   const { id } = req.params;
   const { isAvailable } = req.body; 
 
@@ -90,8 +110,8 @@ const toggleAvailability = catchAsync(async (req: Request, res: Response) => {
 
 
 
-
-const deleteProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+// Delete Property 
+const deleteProperty = catchAsync(async ( req : Request, res : Response ) => {
     const landlordId = req.user?.id
     const isLandlord = req.user?.role === "LANDLORD";
     if (!landlordId) {
@@ -113,7 +133,7 @@ const deleteProperty = catchAsync(async (req : Request, res : Response, next : N
     })
 })
 
-const getPropertiesStats = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+const getPropertiesStats = catchAsync(async ( req : Request, res : Response ) => {
     const result = await PropertyService.getPropertiesStats();
 
     sendResponse(res, {
@@ -124,7 +144,10 @@ const getPropertiesStats = catchAsync(async (req : Request, res : Response, next
     })
 })
 
-const getMyProperties = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+
+
+// Get Own Properties
+const getMyProperties = catchAsync(async ( req : Request, res : Response ) => {
     const landlordId = req.user?.id;
 
     const result = await PropertyService.getMyProperties(landlordId as string);
@@ -136,6 +159,9 @@ const getMyProperties = catchAsync(async (req : Request, res : Response, next : 
         data: result
     })
 })
+
+
+
 
 export const PropertyController = {
     createProperty,

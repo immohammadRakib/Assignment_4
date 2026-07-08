@@ -1,6 +1,13 @@
 import { BookingStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 
+
+
+
+
+
+
+
 const createBookingRequest = async (payload: any, tenantId: string) => {
     const { propertyId, startDate, endDate } = payload;
 
