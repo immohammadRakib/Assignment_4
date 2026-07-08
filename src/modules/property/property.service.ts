@@ -161,6 +161,34 @@ const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayl
     return result;
 }
 
+
+
+
+const updateAvailability = async (id: string, availabilityStatus: boolean) => {
+  const property = await prisma.property.findUnique({
+    where: { id },
+  });
+
+  if (!property) {
+    throw new Error("Property not found!");
+  }
+
+  const result = await prisma.property.update({
+    where: { id },
+    data: {
+      isAvailable: availabilityStatus, 
+    },
+  });
+
+  return result;
+};
+
+
+
+
+
+
+
 const deleteProperty = async (propertyId: string, ownerId: string, isAdmin: boolean) => {
     const property = await prisma.property.findUniqueOrThrow({
         where: {
@@ -183,67 +211,6 @@ const deleteProperty = async (propertyId: string, ownerId: string, isAdmin: bool
 const getPropertiesStats = async () => {
     const transactionResult = await prisma.$transaction(
         async (tx) => {
-            // const totalProperties = await tx.property.count();
-
-            // const totalPublishedProperties = await tx.property.count({
-            //     where : {
-            //         status : PostStatus.PUBLISHED
-            //     }
-            // })
-            // const totalDraftPosts = await tx.post.count({
-            //     where : {
-            //         status : PostStatus.DRAFT
-            //     }
-            // })
-            // const totalArchivedPosts = await tx.post.count({
-            //     where : {
-            //         status : PostStatus.ARCHIVED
-            //     }
-            // })
-
-            // const totalComments = await tx.comment.count();
-
-            // const totalApprovedComments = await tx.comment.count({
-            //     where : {
-            //         status : CommentStatus.APPROVED
-            //     }
-            // });
-            // const totalRejectedComments = await tx.comment.count({
-            //     where : {
-            //         status : CommentStatus.REJECT
-            //     }
-            // });
-
-            // //Not a good approach
-            // // const allPosts = await tx.post.findMany();
-
-            // // let totalPostViews = 0;
-
-            // // allPosts.forEach((post)=>{
-            // //     totalPostViews = totalPostViews + post.views
-            // // })
-
-            // //Good Approach
-            // const totalPostViewsAggregate = await tx.post.aggregate({
-            //     _sum : {
-            //         views : true
-            //     }
-            // })
-
-            // const totalPostViews = totalPostViewsAggregate._sum.views\
-
-            // return {
-            //     totalPosts,
-            //     totalPublishedPosts,
-            //     totalDraftPosts,
-            //     totalArchivedPosts,
-            //     totalComments,
-            //     totalApprovedComments,
-            //     totalRejectedComments,
-            //     totalPostViews
-            // }
-
-
             const [
                 totalProperties,
                 totalPublishedProperties,
@@ -343,5 +310,6 @@ export const PropertyService = {
     updateProperty,
     deleteProperty,
     getPropertiesStats,
-    getMyProperties
+    getMyProperties,
+    updateAvailability
 }

@@ -73,6 +73,24 @@ const updateProperty = catchAsync(async (req : Request, res : Response, next : N
     })
 })
 
+
+const toggleAvailability = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { isAvailable } = req.body; 
+
+  const result = await PropertyService.updateAvailability( id as string, isAvailable );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Property availability status updated successfully!",
+    data: result,
+  });
+});
+
+
+
+
 const deleteProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
     const landlordId = req.user?.id
     const isLandlord = req.user?.role === "LANDLORD";
@@ -126,5 +144,6 @@ export const PropertyController = {
     updateProperty,
     deleteProperty,
     getPropertiesStats,
-    getMyProperties
+    getMyProperties,
+    toggleAvailability
 }
