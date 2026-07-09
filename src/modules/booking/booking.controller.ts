@@ -4,7 +4,11 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { BookingService } from "./booking.service";
 
-const createBookingRequest = catchAsync(async (req: Request, res: Response ) => {
+
+
+
+// Create Booking Request
+const createBookingRequest = catchAsync(async (req: Request, res: Response) => {
     const id = req.user?.id;
     const payload = req.body;
 
@@ -18,7 +22,11 @@ const createBookingRequest = catchAsync(async (req: Request, res: Response ) => 
     });
 });
 
-const getMyBookings = catchAsync(async (req: Request, res: Response ) => {
+
+
+
+// Get My Bookings
+const getMyBookings = catchAsync(async (req: Request, res: Response) => {
     const id = req.user?.id;
     const role = req.user?.role;
 
@@ -32,7 +40,28 @@ const getMyBookings = catchAsync(async (req: Request, res: Response ) => {
     });
 });
 
-const getBookingById = catchAsync(async (req: Request, res: Response ) => {
+
+
+
+
+// Get All Booking for Admin
+const getAllBookingsForAdmin = catchAsync(async (req: Request, res: Response) => {
+    const result = await BookingService.getAllBookingsForAdmin();
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "All rental requests fetched successfully for admin",
+        data: result
+    });
+});
+
+
+
+
+
+// Get Booking By Id
+const getBookingById = catchAsync(async (req: Request, res: Response) => {
     const id = req.params.id;
 
     if (!id) {
@@ -49,7 +78,11 @@ const getBookingById = catchAsync(async (req: Request, res: Response ) => {
     });
 });
 
-const handleBookingStatusUpdate = catchAsync(async (req: Request, res: Response ) => {
+
+
+
+// Handle Booking Status Update
+const handleBookingStatusUpdate = catchAsync(async (req: Request, res: Response) => {
     const landlordId = req.user?.id;
     const { status } = req.body; 
     const id = req.params.id;
@@ -68,9 +101,14 @@ const handleBookingStatusUpdate = catchAsync(async (req: Request, res: Response 
     });
 });
 
+
+
+
+
 export const BookingController = {
     createBookingRequest,
     getMyBookings,
+    getAllBookingsForAdmin, 
     getBookingById,
     handleBookingStatusUpdate
 };
