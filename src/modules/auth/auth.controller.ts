@@ -5,7 +5,9 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
 
 
-const loginUser =  catchAsync ( async ( req: Request, res: Response, next: NextFunction ) => {
+
+// Login User
+const loginUser =  catchAsync ( async ( req: Request, res: Response ) => {
     const payload = req.body
 
     const { accessToken, refreshToken } = await authService.loginUser(payload)
@@ -34,7 +36,9 @@ const loginUser =  catchAsync ( async ( req: Request, res: Response, next: NextF
 
 
 
-const refreshToken = catchAsync ( async ( req: Request, res: Response, next: NextFunction ) => {
+
+// Refresh Token
+const refreshToken = catchAsync ( async ( req: Request, res: Response ) => {
     const refreshToken = req.cookies.refreshToken
 
     const { accessToken } = await authService.refreshToken(refreshToken);
@@ -50,7 +54,7 @@ const refreshToken = catchAsync ( async ( req: Request, res: Response, next: Nex
      sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "User Logged in Successfully",
+        message: "Access token retrieved successfully",
         data: { accessToken }
     })
 

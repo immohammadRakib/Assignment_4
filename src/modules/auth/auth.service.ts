@@ -1,4 +1,3 @@
-import { ref, threadCpuUsage } from "node:process";
 import { prisma } from "../../lib/prisma";
 import  jwt, { JwtPayload, SignOptions }  from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -7,21 +6,16 @@ import { jwtUtils } from "../../utils/jwt";
 import { ILoginUser } from "../../interface/auth.interface";
 
 
+
+// Login User
 const loginUser = async ( payload: ILoginUser) => {
     const { email, password } = payload;
-
-    // const user = await prisma.user.findUnique({
-    //     where: { email }
-    // })
-    // if( !user ){
-    //     throw new Error("user not found")
-    // }
    
     const user = await prisma.user.findUniqueOrThrow({ where: { email }})
 
-    // if( user.activeStatus === "BLOCKED"){
-    //     throw new Error("your account blocked, contract support")
-    // }
+    if( user.activeStatus === "BLOCKED"){
+        throw new Error("your account blocked, contract support")
+    }
 
     const isPasswordMatched = await bcrypt.compare(password, user.password)
     if( !isPasswordMatched ){
@@ -45,6 +39,8 @@ const loginUser = async ( payload: ILoginUser) => {
 }
 
 
+
+// Refresh Token
 const refreshToken = async ( refreshToken: string ) => {
     const verifiedRefreshToken = jwtUtils.verifyToken( refreshToken, config.jwt_refresh_secret )
 
@@ -55,9 +51,9 @@ const refreshToken = async ( refreshToken: string ) => {
     const { id } = verifiedRefreshToken.data as JwtPayload;
 
     const user = await prisma.user.findUniqueOrThrow({ where: { id }})
-    // if( user.activeStatus === "BLOCKED" ){
-    //     throw new Error("User is Blocked")
-    // }
+    if( user.activeStatus === "BLOCKED" ){
+        throw new Error("User is Blocked")
+    }
 
     const jwtPayload = {
         id,
