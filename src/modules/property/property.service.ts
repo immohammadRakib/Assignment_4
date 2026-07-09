@@ -37,16 +37,19 @@ const getAllProperties = async (query: Record<string, any>) => {
         sortBy       
     } = query;
 
-    let whereCondition: any = {
-        status: "AVAILABLE",
-        isAvailable: true
-    };
-
+    let whereCondition: any = {};
+    
     if (role === "ADMIN") {
         whereCondition = {}; 
     }
-    if (role === "LANDLORD" && landlordId) {
+    else if (role === "LANDLORD" && landlordId) {
         whereCondition = { landlordId: landlordId };
+    }
+    else {
+        whereCondition = {
+            status: "AVAILABLE", 
+            isAvailable: true 
+        };
     }
 
     if (location) {
