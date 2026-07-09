@@ -25,8 +25,17 @@ const createProperty = async (payload : ICreatePropertyPayload, userId : string)
 
 
 // Get All Properties
-const getAllProperties = async ( query: Record<string, any> ) => {
-    const { role, landlordId } = query;
+const getAllProperties = async (query: Record<string, any>) => {
+    const { 
+        role, 
+        landlordId, 
+        search, 
+        location,    
+        categoryId,  
+        minPrice,   
+        maxPrice,    
+        sortBy       
+    } = query;
 
     let whereCondition: any = {
         status: "APPROVED",
@@ -36,27 +45,57 @@ const getAllProperties = async ( query: Record<string, any> ) => {
     if (role === "ADMIN") {
         whereCondition = {}; 
     }
-
     if (role === "LANDLORD" && landlordId) {
-        whereCondition = {
-            landlordId: landlordId 
-        };
+        whereCondition = { landlordId: landlordId };
+    }
+
+    if (location) {
+        whereCondition.location = { contains: location, mode: "insensitive" };
+    }
+    
+    if (categoryId) {
+        whereCondition.categoryId = categoryId;
+    }
+
+    if (minPrice || maxPrice) {
+        whereCondition.pricePerDay = {};
+        if (minPrice) whereCondition.pricePerDay.gte = Number(minPrice);
+        if (maxPrice) whereCondition.pricePerDay.lte = Number(maxPrice);
+    }
+
+    if (search) {
+        whereCondition.OR = [
+            { title: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } }
+        ];
+    }
+
+    let orderByCondition: any;
+
+    if (sortBy === "trending") {
+        orderByCondition = [
+            { views: "desc" },               
+            { reviews: { _count: "desc" } }  
+        ];
+    } else {
+        orderByCondition = [{ createdAt: "desc" }]; 
     }
 
     const properties = await prisma.property.findMany({
-        where: whereCondition, 
+        where: whereCondition,
+        orderBy: orderByCondition,
         include: {
-            landlord: {
-                omit: {
-                    password: true
-                }
-            },
-            bookings: true
+            landlord: { omit: { password: true } },
+            category: true,
+            _count: {
+                select: { reviews: true } 
+            }
         }
     });
 
     return properties;
 };
+
 
 
 

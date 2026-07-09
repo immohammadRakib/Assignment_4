@@ -27,21 +27,36 @@ const createProperty = catchAsync(async ( req : Request, res : Response ) => {
 
 
 // Get All Properties
-const getAllProperties = catchAsync(async ( req : Request, res : Response ) => {
+const getAllProperties = catchAsync(async (req: Request, res: Response) => {
+    const { 
+        location, 
+        categoryId, 
+        minPrice, 
+        maxPrice, 
+        sortBy, 
+        search 
+    } = req.query;
+
     const query = {
+        location: location as string,
+        categoryId: categoryId as string,
+        minPrice: minPrice ? Number(minPrice) : undefined,
+        maxPrice: maxPrice ? Number(maxPrice) : undefined,
+        sortBy: sortBy as string,
+        search: search as string,
         role: req.user?.role,       
         landlordId: req.user?.id   
     };
-    
-    const result = await PropertyService.getAllProperties( query );
+
+    const result = await PropertyService.getAllProperties(query);
 
     sendResponse(res, {
-        success : true,
-        statusCode : httpStatus.OK,
-        message : "Properties Retrieved Successfully",
-        data : result
-    })
-})
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Properties retrieved successfully",
+        data: result
+    });
+});
 
 
 
