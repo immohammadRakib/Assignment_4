@@ -108,7 +108,7 @@ const handleBookingStatusUpdate = catchAsync(async (req: Request, res: Response)
 // Cancel Booking By Tenant
 const cancelBooking = catchAsync(async (req: Request, res: Response) => {
     const tenantId = req.user?.id;
-    const { id: bookingId } = req.params; // ইউআরএল থেকে আইডি নেওয়া
+    const { id: bookingId } = req.params; 
 
     if (!tenantId) {
         throw new Error("Unauthorized access. Tenant ID missing.");

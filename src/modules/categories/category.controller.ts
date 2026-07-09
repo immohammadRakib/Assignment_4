@@ -42,7 +42,7 @@ const deleteCategory = catchAsync( async ( req: Request, res: Response ) => {
     const result = await CategoryService.deleteCategory( id as string )
 
     sendResponse( res, {
-        statusCode: 200,
+        statusCode: httpStatus.OK,
         success: true,
         message: "Category deleted successfully",
         data: result,
@@ -59,7 +59,7 @@ const getCategoryWithPropertyCount = catchAsync(async (req: Request, res: Respon
   const result = await CategoryService.getCategoryWithPropertyCount( id as string );
 
   sendResponse(res, {
-    statusCode: 200,
+    statusCode: httpStatus.OK,
     success: true,
     message: "Category with property count retrieved successfully!",
     data: result,

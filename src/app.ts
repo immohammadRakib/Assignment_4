@@ -12,6 +12,7 @@ import { ReviewRoutes } from "./modules/review/review.route";
 import { globalErrorHandler } from "./middleware/globalErrorHandler";
 import { notFound } from "./middleware/notFound";
 import { AdminRoutes } from "./modules/admin/admin.route";
+import { DashboardRoutes } from "./modules/dashboard/dashboard.route";
 
 
 
@@ -50,6 +51,7 @@ app.use("/api/categories", CategoryRoutes);
 
 // Admin
 app.use('/api/admin', AdminRoutes);
+app.use('/api/dashboard', DashboardRoutes)
 
 
 // Error Handler

@@ -1,15 +1,15 @@
 import express from 'express';
 import { PropertyController } from './property.controller';
-import { auth } from '../../middleware/auth'; // Apnar auth middleware
+import { auth } from '../../middleware/auth'; 
 import { Role } from '../../../generated/prisma/enums';
 
 const router = express.Router();
 
-// Publicly properties dekhate auth lagbe na
+// Publicly Properties
 router.get('/properties', PropertyController.getAllProperties);
 
 
-// Shudhu authenticated landlord-ra property korte parbe
+// Only Authenticated Landlord
 router.post('/landlord/properties', auth( Role.LANDLORD ), PropertyController.createProperty);
 router.patch('/landlord/properties/isAvailable/:propertyId', auth( Role.LANDLORD ), PropertyController.toggleAvailability);
 router.delete('/landlord/properties/:propertyId', auth( Role.LANDLORD ), PropertyController.deleteProperty);
