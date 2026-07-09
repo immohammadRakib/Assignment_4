@@ -33,10 +33,20 @@ const getAllCategories = async () => {
 const deleteCategory = async (id: string) => {
   const isExist = await prisma.category.findUnique({
     where: { id },
+    include: {
+        _count: {
+            select: { properties: true }, 
+        },
+        properties: true,
+    },
   });
 
   if (!isExist) {
     throw new Error("Category not found!");
+  }
+
+  if (isExist._count.properties > 0) {
+    throw new Error("Cannot delete this category because it contains active property listings! Delete those properties first.");
   }
 
   const result = await prisma.category.delete({
