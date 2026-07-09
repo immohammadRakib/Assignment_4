@@ -6,7 +6,7 @@ import { Role } from '../../../generated/prisma/enums';
 const router = express.Router();
 
 // Publicly Properties
-router.get('/properties', PropertyController.getAllProperties);
+router.get('/properties', auth( Role.ADMIN, Role.LANDLORD, Role.TENANT ), PropertyController.getAllProperties);
 
 
 // Only Authenticated Landlord
