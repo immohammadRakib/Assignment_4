@@ -105,10 +105,34 @@ const handleBookingStatusUpdate = catchAsync(async (req: Request, res: Response)
 
 
 
+// Cancel Booking By Tenant
+const cancelBooking = catchAsync(async (req: Request, res: Response) => {
+    const tenantId = req.user?.id;
+    const { id: bookingId } = req.params; // ইউআরএল থেকে আইডি নেওয়া
+
+    if (!tenantId) {
+        throw new Error("Unauthorized access. Tenant ID missing.");
+    }
+
+    const result = await BookingService.cancelBookingByTenant(bookingId as string, tenantId as string);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Booking cancelled successfully",
+        data: result
+    });
+});
+
+
+
+
+
 export const BookingController = {
     createBookingRequest,
     getMyBookings,
     getAllBookingsForAdmin, 
     getBookingById,
-    handleBookingStatusUpdate
+    handleBookingStatusUpdate,
+    cancelBooking
 };

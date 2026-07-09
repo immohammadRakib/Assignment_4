@@ -31,6 +31,7 @@ rentalRouter.get(
     BookingController.getMyBookings
 );
 
+
 // Get all rental requests (Admin only)
 rentalRouter.get(
     '/admin/all-requests', 
@@ -52,6 +53,14 @@ rentalRouter.get(
     '/:id', 
     auth(Role.TENANT, Role.LANDLORD, Role.ADMIN), 
     BookingController.getBookingById
+);
+
+
+// Cancel Booking by Tenant
+rentalRouter.patch(
+    '/cancel/:id', 
+    auth(Role.TENANT), 
+    BookingController.cancelBooking
 );
 
 

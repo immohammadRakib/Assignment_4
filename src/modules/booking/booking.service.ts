@@ -144,10 +144,43 @@ const handleBookingStatusUpdate = async (bookingId: string, landlordId: string, 
 
 
 
+const cancelBookingByTenant = async (bookingId: string, tenantId: string) => {
+    return await prisma.$transaction(async (tx) => {
+        const booking = await tx.booking.findUniqueOrThrow({
+            where: { id: bookingId }
+        });
+
+        if (booking.tenantId !== tenantId) {
+            throw new Error("You are not authorized to cancel this booking!");
+        }
+
+        if (booking.status === BookingStatus.CANCELLED) {
+            throw new Error("This booking is already cancelled!");
+        }
+
+        const updatedBooking = await tx.booking.update({
+            where: { id: bookingId },
+            data: { status: BookingStatus.CANCELLED }
+        });
+
+        await tx.property.update({
+            where: { id: booking.propertyId },
+            data: { isAvailable: true }
+        });
+
+        return updatedBooking;
+    });
+};
+
+
+
+
+
 export const BookingService = {
     createBookingRequest,
     getMyBookings,
     getAllBookingsForAdmin, 
     getBookingById,
-    handleBookingStatusUpdate
+    handleBookingStatusUpdate,
+    cancelBookingByTenant
 };
