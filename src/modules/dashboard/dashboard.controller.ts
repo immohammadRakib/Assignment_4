@@ -1,11 +1,13 @@
 import { Request, Response } from "express";
+import httpStatus from "http-status"; 
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { DashboardService } from "./dashboard.service";
 
 
 
-//Property Stats for Landlord and Admin
+
+// Property Stats for Landlord and Admin
 const getDashboardStats = catchAsync(async (req: Request, res: Response) => {
     const role = req.user?.role;
     const userId = req.user?.id;
@@ -21,7 +23,7 @@ const getDashboardStats = catchAsync(async (req: Request, res: Response) => {
 
     sendResponse(res, {
         success: true,
-        statusCode: 200,
+        statusCode: httpStatus.OK, 
         message: `${role} Dashboard stats fetched successfully`,
         data: result
     });
@@ -32,4 +34,4 @@ const getDashboardStats = catchAsync(async (req: Request, res: Response) => {
 
 export const DashboardController = {
     getDashboardStats
-}
+};

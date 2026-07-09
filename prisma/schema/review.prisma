@@ -6,9 +6,8 @@ model Review {
   comment    String
   createdAt  DateTime @default(now())
 
-  // Relations - User model-er reviews field-er sathe match korano holo
+  // Relations
   tenant User @relation("TenantReviews", fields: [tenantId], references: [id], onDelete: Cascade)
-
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@map("reviews")

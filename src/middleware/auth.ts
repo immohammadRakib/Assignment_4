@@ -20,10 +20,12 @@ declare global {
     }
 }
 
+
+// Auth Middleware
 export const auth = (...requiredRoles: Role[]) => {
     return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         
-        // ১. টোকেন এক্সট্র্যাক্ট করা
+        // Token Access
         const token = req.cookies.accessToken ?
             req.cookies.accessToken 
             :
@@ -39,7 +41,7 @@ export const auth = (...requiredRoles: Role[]) => {
             });
         }
 
-        // ২. টোকেন ভেরিফাই করা
+        // Token Verify
         const verifiedToken = jwtUtils.verifyToken(token, config.jwt_access_secret);
 
         if (!verifiedToken.success) {
@@ -76,7 +78,7 @@ export const auth = (...requiredRoles: Role[]) => {
             });
         }
 
-        // ৫. অ্যাকাউন্ট স্ট্যাটাস চেক করা
+        // Account Status Check
         if (user.activeStatus === "BLOCKED") {
             return res.status(httpStatus.FORBIDDEN).json({
                 success: false,
@@ -85,7 +87,6 @@ export const auth = (...requiredRoles: Role[]) => {
             });
         }
 
-        // ৬. কন্ট্রোলারের জন্য Request অবজেক্টে ডেটা সেট করা
         req.user = {
             id: user.id,
             name: user.name,

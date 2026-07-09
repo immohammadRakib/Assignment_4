@@ -3,7 +3,6 @@ import { prisma } from "../../lib/prisma"
 
 
 
-
 // Admin Stats For Dashboard
 const getAdminDashboardStats = async () => {
     const [
@@ -15,10 +14,9 @@ const getAdminDashboardStats = async () => {
         totalRentalRequests,
         totalConfirmedBookings
     ] = await Promise.all([
-
         prisma.user.count({ where: { role: "TENANT" } }),
         prisma.user.count({ where: { role: "LANDLORD" } }),
-        prisma.user.count({ where: { activeStatus: "BLOCKED" } }), 
+        prisma.user.count({ where: { activeStatus: "BLOCKED" } }), // 👈 আপনার এনাম ফিল্ড অনুযায়ী নিখুঁত
         
         prisma.property.count(),
         prisma.category.count(),
@@ -53,7 +51,6 @@ const getLandlordDashboardStats = async (landlordId: string) => {
         myPropertyViewsAggregate,
         myTotalEarningsAggregate
     ] = await Promise.all([
-
         prisma.property.count({ where: { landlordId } }),
         prisma.property.count({ where: { landlordId, isAvailable: true } }),
         prisma.booking.count({ where: { property: { landlordId } } }),
@@ -71,13 +68,12 @@ const getLandlordDashboardStats = async (landlordId: string) => {
         prisma.booking.aggregate({
             where: {
                 property: { landlordId },
-                    status: "PAID" 
+                status: "PAID" 
             },
             _sum: {
                 totalPrice: true 
             }
         })
-
     ]);
 
     return {
@@ -87,14 +83,15 @@ const getLandlordDashboardStats = async (landlordId: string) => {
         myPendingRequests,
         myConfirmedBookings,
         myTotalReviews,
-        myPropertyViews: myPropertyViewsAggregate._sum.views || 0 ,
-        myTotalEarningsAggregate
+        myPropertyViews: myPropertyViewsAggregate._sum.views || 0,
+        myTotalEarnings: myTotalEarningsAggregate._sum.totalPrice || 0 
     };
 };
+
 
 
 
 export const DashboardService = {
     getAdminDashboardStats,
     getLandlordDashboardStats
-}
+};

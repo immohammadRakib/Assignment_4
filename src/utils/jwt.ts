@@ -1,6 +1,7 @@
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken"
 
 
+// Create Token
 const createToken = ( payload: JwtPayload, secret: string, expiresIn: SignOptions ) => {
     const token = jwt.sign( payload, secret, { expiresIn } as SignOptions )
 
@@ -8,6 +9,7 @@ const createToken = ( payload: JwtPayload, secret: string, expiresIn: SignOption
 }
 
 
+// Verify Token
 const verifyToken = ( token: string, secret: string ) => {
     try {
         const verifiedToken = jwt.verify( token, secret )

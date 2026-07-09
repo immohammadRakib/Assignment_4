@@ -28,25 +28,31 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
 
+// User Register
 app.get("/", ( req: Request, res: Response ) => {
     res.send("Hello, World!");
 });
 
+// Auth 
 app.use('/api/auth', UserRoutes);
 app.use('/api/auth', authRoutes);
 
+// Property and Rentals
 app.use('/api', PropertyRoutes); 
 app.use('/api/rentals', RentalRoutes);
 
+// Payments 
 app.use('/api/payments', PaymentRoutes); 
 
+// Reviews and Categories
 app.use("/api/reviews", ReviewRoutes);
 app.use("/api/categories", CategoryRoutes);
 
+// Admin
 app.use('/api/admin', AdminRoutes);
 
 
-
+// Error Handler
 app.use(notFound);
 app.use(globalErrorHandler);
 

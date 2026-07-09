@@ -12,8 +12,6 @@ model Booking {
   // Relations
   tenant   User     @relation("TenantBookings", fields: [tenantId], references: [id], onDelete: Cascade)
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  // Payment er sathe 1:1 relation
   payment Payment?
 
   @@map("bookings")

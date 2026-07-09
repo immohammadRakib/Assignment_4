@@ -12,8 +12,6 @@ model User {
   profile    Profile?
   properties Property[] @relation("LandlordProperties")
   bookings   Booking[]  @relation("TenantBookings")
-
-  // Reviewer sathe relation (Ekhane naam thakte hobe)
   reviews Review[] @relation("TenantReviews")
 
   @@map("users")
