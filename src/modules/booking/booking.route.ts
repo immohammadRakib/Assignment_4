@@ -5,11 +5,7 @@ import { Role } from '../../../generated/prisma/enums';
 
 
 
-
-
 const rentalRouter = express.Router();
-
-
 
 
 //  Submit a rental request
@@ -19,13 +15,13 @@ rentalRouter.post(
     BookingController.createBookingRequest
 );
 
+
 //  Get user's own rental requests history
 rentalRouter.get(
     '/', 
     auth(Role.TENANT), 
     BookingController.getMyBookings
 );
-
 
 
 // Get Her propery rental Request
@@ -43,14 +39,12 @@ rentalRouter.get(
 );
 
 
-
-//  Approve or reject a rental request -> PATCH /api/landlord/requests/:id
+//  Approve or reject a rental request 
 rentalRouter.patch(
     '/landlord/requests/:id', 
     auth(Role.LANDLORD), 
     BookingController.handleBookingStatusUpdate
 );
-
 
 
 // Get individual rental request details
