@@ -3,11 +3,7 @@ import { prisma } from "../../lib/prisma";
 
 
 
-
-
-
-
-
+// Create Booking Request
 const createBookingRequest = async (payload: any, tenantId: string) => {
     const { propertyId, startDate, endDate } = payload;
 
@@ -55,6 +51,10 @@ const createBookingRequest = async (payload: any, tenantId: string) => {
     return result;
 };
 
+
+
+
+// Get My Bookings (For Tenants and Landlords)
 const getMyBookings = async (userId: string, role: string) => {
     const result = await prisma.booking.findMany({
         where: {
@@ -63,9 +63,7 @@ const getMyBookings = async (userId: string, role: string) => {
         },
         include: {
             property: true,
-            tenant: {
-                omit: { password: true }
-            }
+            tenant: { omit: { password: true } }
         },
         orderBy: { createdAt: "desc" }
     });
@@ -73,20 +71,42 @@ const getMyBookings = async (userId: string, role: string) => {
     return result;
 };
 
+
+
+
+// Get All Booking Hisoty for Admin
+const getAllBookingsForAdmin = async () => {
+    const result = await prisma.booking.findMany({
+        include: {
+            property: true,
+            tenant: { omit: { password: true } }
+        },
+        orderBy: { createdAt: "desc" }
+    });
+    return result;
+};
+
+
+
+
+// Get Booking By Id
 const getBookingById = async (bookingId: string) => {
     const result = await prisma.booking.findUniqueOrThrow({
         where: { id: bookingId },
         include: {
             property: true,
-            tenant: {
-                omit: { password: true }
-            }
+            tenant: { omit: { password: true } }
         }
     });
 
     return result;
 };
 
+
+
+
+
+// Handle Booking Status Update 
 const handleBookingStatusUpdate = async (bookingId: string, landlordId: string, status: BookingStatus) => {
     return await prisma.$transaction(async (tx) => {
         const booking = await tx.booking.findUniqueOrThrow({
@@ -121,9 +141,13 @@ const handleBookingStatusUpdate = async (bookingId: string, landlordId: string, 
     });
 };
 
+
+
+
 export const BookingService = {
     createBookingRequest,
     getMyBookings,
+    getAllBookingsForAdmin, 
     getBookingById,
     handleBookingStatusUpdate
 };
