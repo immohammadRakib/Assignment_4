@@ -24,6 +24,7 @@ const createProperty = async (payload : ICreatePropertyPayload, userId : string)
 
 
 
+
 // Get All Properties
 const getAllProperties = async (query: Record<string, any>) => {
     const { 
@@ -40,18 +41,27 @@ const getAllProperties = async (query: Record<string, any>) => {
     let whereCondition: any = {};
     
     if (role === "ADMIN") {
-        whereCondition = {}; 
+        const properties = await prisma.property.findMany({
+            where: {}, 
+            orderBy: sortBy === "trending" ? [{ views: "desc" }, { reviews: { _count: "desc" } }] : [{ createdAt: "desc" }],
+            include: {
+                landlord: { omit: { password: true } },
+                category: true,
+                _count: { select: { reviews: true } }
+            }
+        });
+        return properties;
     }
-    else if (role === "LANDLORD" && landlordId) {
+
+    if (role === "LANDLORD" && landlordId) {
         whereCondition = { landlordId: landlordId };
     }
     else {
         whereCondition = {
-            status: "AVAILABLE", 
+            status: PropertyStatus.AVAILABLE, 
             isAvailable: true 
         };
     }
-
     if (location) {
         whereCondition.location = { contains: location, mode: "insensitive" };
     }
@@ -73,15 +83,12 @@ const getAllProperties = async (query: Record<string, any>) => {
         ];
     }
 
-    let orderByCondition: any;
-
+    let orderByCondition: any = [{ createdAt: "desc" }];
     if (sortBy === "trending") {
         orderByCondition = [
             { views: "desc" },               
             { reviews: { _count: "desc" } }  
         ];
-    } else {
-        orderByCondition = [{ createdAt: "desc" }]; 
     }
 
     const properties = await prisma.property.findMany({
@@ -90,14 +97,13 @@ const getAllProperties = async (query: Record<string, any>) => {
         include: {
             landlord: { omit: { password: true } },
             category: true,
-            _count: {
-                select: { reviews: true } 
-            }
+            _count: { select: { reviews: true } }
         }
     });
 
     return properties;
 };
+
 
 
 
