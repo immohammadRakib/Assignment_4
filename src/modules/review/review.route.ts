@@ -11,6 +11,12 @@ router.post(
     ReviewController.createReview
 );
 
+router.delete(
+    '/:reviewId',
+    auth(Role.TENANT),
+    ReviewController.deleteReview
+);
+
 router.get(
     "/property/:propertyId", 
     ReviewController.getPropertyReviews

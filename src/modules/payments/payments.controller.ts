@@ -3,7 +3,7 @@ import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { paymentService } from "./payments.service";
-
+import config from "../../config";
 
 
 
@@ -42,9 +42,9 @@ const confirmPayment = catchAsync(async (req: Request, res: Response) => {
     );
 
     if (result.success) {
-        return res.redirect(`http://localhost:3000/payments?tranId=${tranId}&status=success`);
+        return res.redirect(`${config.app_url}/payments?tranId=${tranId}&status=success`);
     } else {
-        return res.redirect(`http://localhost:3000/payments?status=fail`);
+        return res.redirect(`${config.app_url}/payments?tranId=${tranId}&status=fail`);
     }
 });
 
@@ -57,7 +57,7 @@ const failPayment = catchAsync(async (req: Request, res: Response) => {
 
     await paymentService.handleFailedPaymentInDB(tranId as string, bookingId as string);
 
-    return res.redirect(`http://localhost:3000/payments?tranId=${tranId}&status=fail`);
+    return res.redirect(`${config.app_url}/payments?tranId=${tranId}&status=fail`);
 });
 
 
@@ -68,7 +68,7 @@ const cancelPayment = catchAsync(async (req: Request, res: Response) => {
 
     await paymentService.handleCancelledPaymentInDB(tranId as string, bookingId as string);
 
-    return res.redirect(`http://localhost:3000/payments?status=cancel`);
+    return res.redirect(`${config.app_url}/payments?tranId=${tranId}&status=cancel`);
 });
 
 

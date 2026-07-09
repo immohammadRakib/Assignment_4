@@ -41,7 +41,7 @@ router.post(
 
 
 
-// Payment History Route (Only accessible by TENANT role)
+// Payment History Route
 router.get(
     '/',
     auth( Role.TENANT, Role.ADMIN, Role.LANDLORD ),
