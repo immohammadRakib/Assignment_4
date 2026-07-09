@@ -9,17 +9,30 @@ import { prisma } from "../../lib/prisma";
 // Get All User 
 const getAllUsers = async () => {
     return await prisma.user.findMany({
+        omit: {
+            password: true 
+        },
+        include: {
+            profile: true 
+        },
         orderBy: { createdAt: 'desc' }
     });
 };
+
+
 
 // User status Active/Blocked
 const updateUserStatus = async (id: string, status: ActiveStatus) => {
     return await prisma.user.update({
         where: { id },
-        data: { activeStatus: status }
+        data: { activeStatus: status },
+        omit: {
+            password: true 
+        }
     });
 };
+
+
 
 // Get All Property
 const getAllProperties = async () => {
@@ -30,6 +43,8 @@ const getAllProperties = async () => {
         }
     });
 };
+
+
 
 // All Rental Request
 const getAllRentals = async () => {

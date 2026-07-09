@@ -3,7 +3,10 @@ import { AdminController } from "./admin.controller";
 import { auth } from "../../middleware/auth";
 import { Role } from "../../../generated/prisma/enums";
 
+
+
 const router = express.Router();
+
 
 // All Users
 router.get("/users", auth(Role.ADMIN), AdminController.getAllUsers);
