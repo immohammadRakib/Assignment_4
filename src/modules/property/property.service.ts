@@ -38,7 +38,7 @@ const getAllProperties = async (query: Record<string, any>) => {
     } = query;
 
     let whereCondition: any = {
-        status: "APPROVED",
+        status: "AVAILABLE",
         isAvailable: true
     };
 
