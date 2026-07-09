@@ -116,14 +116,14 @@ const getPropertyById = async (propertyId : string) => {
 
 
 // Update Property
-const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayload, ownerId : string, isAdmin : boolean) => {
+const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayload, ownerId : string ) => {
     const property = await prisma.property.findUniqueOrThrow({
         where : {
             id : propertyId 
         }
     })
 
-    if(!isAdmin && property.landlordId !== ownerId ){
+    if( property.landlordId !== ownerId ){
         throw new Error("You are not the owner of this property!")
     }
 
@@ -147,14 +147,17 @@ const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayl
 
 
 
-// Update Availability Status
-const updateAvailability = async (id: string, availabilityStatus: boolean) => {
+// Update Availability Status by Landlord
+const updateAvailability = async (id: string, availabilityStatus: boolean, landlordId: string) => {
   const property = await prisma.property.findUnique({
     where: { id },
   });
 
   if (!property) {
     throw new Error("Property not found!");
+  }
+  if (property.landlordId !== landlordId) {
+    throw new Error("You do not own this property to change its availability!");
   }
 
   const result = await prisma.property.update({
@@ -170,15 +173,36 @@ const updateAvailability = async (id: string, availabilityStatus: boolean) => {
 
 
 
+
+//Update Property Status by Admin
+const changePropertyStatusByAdmin = async (propertyId: string, status: PropertyStatus) => {
+    const property = await prisma.property.findUniqueOrThrow({
+        where: { id: propertyId }
+    });
+
+    const result = await prisma.property.update({
+        where: { id: propertyId },
+        data: {
+            status: status 
+        }
+    });
+
+    return result;
+};
+
+
+
+
+
 // Delete Property
-const deleteProperty = async (propertyId: string, ownerId: string, isAdmin: boolean) => {
+const deleteProperty = async (propertyId: string, ownerId: string ) => {
     const property = await prisma.property.findUniqueOrThrow({
         where: {
             id: propertyId
         }
     });
 
-    if (!isAdmin && property.landlordId !== ownerId) {
+    if ( property.landlordId !== ownerId) {
         throw new Error("You are not the owner of this property!")
     }
 
@@ -207,7 +231,7 @@ const getMyProperties = async (landlordId : string) => {
 
         include : {
             bookings : true,
-            author : {
+            landlord : {
                 omit : {
                     password : true
                 }
@@ -228,96 +252,6 @@ const getMyProperties = async (landlordId : string) => {
 
 
 
-// Landlord Stats For Dashboard
-const getLandlordDashboardStats = async (landlordId: string) => {
-    const [
-        myTotalProperties,
-        myAvailableProperties,
-        myTotalBookings,
-        myPendingRequests,
-        myConfirmedBookings,
-        myTotalReviews,
-        myPropertyViewsAggregate,
-        myTotalEarningsAggregate
-    ] = await Promise.all([
-
-        prisma.property.count({ where: { landlordId } }),
-        prisma.property.count({ where: { landlordId, isAvailable: true } }),
-        prisma.booking.count({ where: { property: { landlordId } } }),
-
-        prisma.booking.count({ where: { property: { landlordId }, status: "PENDING" } }),
-        prisma.booking.count({ where: { property: { landlordId }, status: "CONFIRMED" } }),
- 
-        prisma.review.count({ where: { property: { landlordId } } }),
-        
-        prisma.property.aggregate({
-            where: { landlordId },
-            _sum: { views: true }
-        }),
-        
-        prisma.booking.aggregate({
-            where: {
-                property: { landlordId },
-                    status: "PAID" 
-            },
-            _sum: {
-                totalPrice: true 
-            }
-        })
-
-    ]);
-
-    return {
-        myTotalProperties,
-        myAvailableProperties,
-        myTotalBookings,
-        myPendingRequests,
-        myConfirmedBookings,
-        myTotalReviews,
-        myPropertyViews: myPropertyViewsAggregate._sum.views || 0 ,
-        myTotalEarningsAggregate
-    };
-};
-
-
-
-
-// Admin Stats For Dashboard
-const getAdminDashboardStats = async () => {
-    const [
-        totalTenants,
-        totalLandlords,
-        totalBannedUsers,
-        totalProperties,
-        totalCategories,
-        totalRentalRequests,
-        totalConfirmedBookings
-    ] = await Promise.all([
-
-        prisma.user.count({ where: { role: "TENANT" } }),
-        prisma.user.count({ where: { role: "LANDLORD" } }),
-        prisma.user.count({ where: { activeStatus: "ACTIVE" } }), 
-        
-        prisma.property.count(),
-        prisma.category.count(),
-
-        prisma.booking.count(),
-        prisma.booking.count({ where: { status: "CONFIRMED" } })
-    ]);
-
-    return {
-        totalTenants,
-        totalLandlords,
-        totalBannedUsers,
-        totalProperties,
-        totalCategories,
-        totalRentalRequests,
-        totalConfirmedBookings
-    };
-};
-
-
-
 
 
 export const PropertyService = {
@@ -328,6 +262,5 @@ export const PropertyService = {
     deleteProperty,
     getMyProperties,
     updateAvailability,
-    getAdminDashboardStats,
-    getLandlordDashboardStats
+    changePropertyStatusByAdmin,
 }

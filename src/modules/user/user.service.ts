@@ -20,34 +20,30 @@ const registerUserIntoDB = async ( payload: RegisterUserPayload ) => {
         throw new Error('User already exists');
      }
      
-     const hashedPassword = await bcrypt.hash(password, Number(config.bcryptSaltRounds));
+    const hashedPassword = await bcrypt.hash(password, Number(config.bcryptSaltRounds));
      
-     const newUser = await prisma.user.create({
-          data: {
-               name,
-               email,
-               password: hashedPassword,
-               role: role || "TENANT", 
-               profile: {
-                    create: {
-                        profilePhoto
+    const newUser = await prisma.user.create({
+        data: {
+            name,
+            email,
+            password: hashedPassword,
+            role: role || "TENANT", 
+            profile: {
+                create: {
+                    profilePhoto
                     }
                }
-          }
-     });
-
-    const user = await prisma.user.findUnique({
-        where: {
-            id: newUser.id
         },
         omit: {
             password: true
-        },
+            },
         include: {
             profile: true
         }
-    })
-    return user;
+     });
+
+   
+    return newUser;
 }
 
 
@@ -68,7 +64,7 @@ const getMyProfileIntoDB = async ( userId: string ) => {
 
 
 // Update Profile
-const updateMyProdileIntoDB = async ( userId: string, payload: any ) => {
+const updateMyProfileIntoDB = async ( userId: string, payload: any ) => {
     const { name, email, profileImage, bio, phone, address } = payload;
 
     const updatedUser = await prisma.user.update({
@@ -103,5 +99,5 @@ const updateMyProdileIntoDB = async ( userId: string, payload: any ) => {
 export const userService = {
     registerUserIntoDB,
     getMyProfileIntoDB,
-    updateMyProdileIntoDB
+    updateMyProfileIntoDB
 }

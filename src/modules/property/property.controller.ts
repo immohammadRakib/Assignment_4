@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
@@ -58,7 +58,7 @@ const getPropertyById = catchAsync(async ( req : Request, res : Response ) => {
     sendResponse(res, {
         success : true,
         statusCode : httpStatus.OK,
-        message : "Property retrieved successfuly",
+        message : "Property retrieved successfully",
         data : result
     })
 })
@@ -68,7 +68,6 @@ const getPropertyById = catchAsync(async ( req : Request, res : Response ) => {
 // Update Property By Id
 const updateProperty = catchAsync(async ( req : Request, res : Response ) => {
     const landlordId = req.user?.id
-    const isLandlord = req.user?.role === "LANDLORD";
     if (!landlordId) {
     throw new Error("Unauthorized access. Landlord ID missing.");
 }
@@ -81,7 +80,7 @@ const updateProperty = catchAsync(async ( req : Request, res : Response ) => {
 
     const payload = req.body;
 
-    const result = await PropertyService.updateProperty( propertyId as string, payload, landlordId as string, isLandlord );
+    const result = await PropertyService.updateProperty( propertyId as string, payload, landlordId as string );
 
     sendResponse(res, {
         success: true,
@@ -93,15 +92,50 @@ const updateProperty = catchAsync(async ( req : Request, res : Response ) => {
 
 
 
-// Toggle Property Availability
-const toggleAvailability = catchAsync(async ( req: Request, res: Response ) => {
+
+
+
+// Change Property Status By Admin
+const changePropertyStatus = catchAsync(async (req: Request, res: Response) => {
+    const { propertyId } = req.params;
+    const { status } = req.body; 
+
+    if (!status) {
+        throw new Error("Property status is required in body!");
+    }
+
+    const result = await PropertyService.changePropertyStatusByAdmin(
+        propertyId as string, 
+        status
+    );
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: `Property status updated to ${status} successfully`,
+        data: result
+    });
+});
+
+
+
+
+
+// Toggle Property Availability By Landlord
+const toggleAvailability = catchAsync(async (req: Request, res: Response) => {
+  const landlordId = req.user?.id; 
+  
+  if (!landlordId) {
+    throw new Error("Unauthorized access. Landlord ID missing.");
+  }
+
   const { id } = req.params;
   const { isAvailable } = req.body; 
 
-  const result = await PropertyService.updateAvailability( id as string, isAvailable );
+  const result = await PropertyService.updateAvailability(id as string, isAvailable, landlordId as string);
 
   sendResponse(res, {
-    statusCode: 200,
+    statusCode: httpStatus.OK,
     success: true,
     message: "Property availability status updated successfully!",
     data: result,
@@ -110,10 +144,10 @@ const toggleAvailability = catchAsync(async ( req: Request, res: Response ) => {
 
 
 
+
 // Delete Property 
 const deleteProperty = catchAsync(async ( req : Request, res : Response ) => {
     const landlordId = req.user?.id
-    const isLandlord = req.user?.role === "LANDLORD";
     if (!landlordId) {
     throw new Error("Unauthorized access. Landlord ID missing.");
 }
@@ -123,7 +157,7 @@ const deleteProperty = catchAsync(async ( req : Request, res : Response ) => {
         throw new Error("Property Id Required In Params")
     }
 
-    await PropertyService.deleteProperty(propertyId as string, landlordId as string, isLandlord)
+    await PropertyService.deleteProperty(propertyId as string, landlordId as string )
 
     sendResponse(res, {
         success: true,
@@ -145,7 +179,7 @@ const getMyProperties = catchAsync(async ( req : Request, res : Response ) => {
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "My Properties retrieved successfuly",
+        message: "My Properties retrieved successfully",
         data: result
     })
 })
@@ -153,27 +187,6 @@ const getMyProperties = catchAsync(async ( req : Request, res : Response ) => {
 
 
 
-//Property Stats for Landlord and Admin
-const getDashboardStats = catchAsync(async (req: Request, res: Response) => {
-    const role = req.user?.role;
-    const userId = req.user?.id;
-    let result;
-
-    if (role === "ADMIN") {
-        result = await PropertyService.getAdminDashboardStats();
-    } else if (role === "LANDLORD") {
-        result = await PropertyService.getLandlordDashboardStats(userId as string);
-    } else {
-        throw new Error("You are not authorized to view dashboard stats!");
-    }
-
-    sendResponse(res, {
-        success: true,
-        statusCode: 200,
-        message: `${role} Dashboard stats fetched successfully`,
-        data: result
-    });
-});
 
 
 
@@ -185,7 +198,7 @@ export const PropertyController = {
     getPropertyById,
     updateProperty,
     deleteProperty,
-    getDashboardStats,
     getMyProperties,
+    changePropertyStatus,
     toggleAvailability
 }
