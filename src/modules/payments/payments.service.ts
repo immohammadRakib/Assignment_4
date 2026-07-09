@@ -1,13 +1,13 @@
-import { Booking, User } from "../../../generated/prisma/client"
-import config from "../../config"
-import axios from "axios"
+import { User } from "../../../generated/prisma/client";
+import config from "../../config";
+import axios from "axios";
 import { prisma } from "../../lib/prisma";
 
 
 
 
-// Payement initiation method for a booking
-const initialPayement = async (bookingId: string, user: User) => {
+// Initiate Payment 
+const initialPayment = async (bookingId: string, user: User) => {
     const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: { tenant: true, property: true }
@@ -22,6 +22,16 @@ const initialPayement = async (bookingId: string, user: User) => {
     }
 
     const tranId = `TRNX-${Date.now()}`;
+
+    await prisma.payment.create({
+        data: {
+            transactionId: tranId,
+            bookingId: bookingId,
+            amount: booking.totalPrice,
+            status: "PENDING", 
+            method: "UNKNOWN"
+        }
+    });
 
     const paymentData = {
         store_id: config.ssl_commerz_store_id,
@@ -44,19 +54,18 @@ const initialPayement = async (bookingId: string, user: User) => {
         product_profile: "general",
     };
 
-
     const formParams = new URLSearchParams(paymentData);
     
     const response = await axios.post("https://sandbox.sslcommerz.com/gwprocess/v4/api.php", formParams, {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
 
-    const data = await response.data;
+    const data = response.data;
     let GatewayPageURL = data.GatewayPageURL;
 
-    console.log('Redirecting to: ', GatewayPageURL)
+    console.log('Redirecting to: ', GatewayPageURL);
     return { GatewayPageURL, tranId };
-}
+};
 
 
 
@@ -65,14 +74,13 @@ const initialPayement = async (bookingId: string, user: User) => {
 const verifyPayment = async (tranId: string, bookingId: string, paymentResponse: any) => {
     if (paymentResponse && paymentResponse.status === 'VALID') {
         const transactionResult = await prisma.$transaction(async (tx) => {
-            
-            const paymentResult = await tx.payment.create({
+
+            const paymentResult = await tx.payment.update({
+                where: { transactionId: tranId },
                 data: {
-                    transactionId: tranId,
-                    bookingId: bookingId,
-                    amount: Number(paymentResponse.amount),
                     status: "PAID", 
-                    method: paymentResponse.card_type
+                    method: paymentResponse.card_type,
+                    amount: Number(paymentResponse.amount),
                 }
             });
 
@@ -99,7 +107,7 @@ const verifyPayment = async (tranId: string, bookingId: string, paymentResponse:
             return paymentResult;
         });
 
-        return { data: transactionResult };
+        return { success: true, data: transactionResult };
     }
 
     return { success: false, message: "Payment verification failed" };
@@ -108,47 +116,120 @@ const verifyPayment = async (tranId: string, bookingId: string, paymentResponse:
 
 
 
+// Handle Failed Payment
+const handleFailedPaymentInDB = async (tranId: string, bookingId: string) => {
+    return await prisma.$transaction(async (tx) => {
+        await tx.payment.update({
+            where: { transactionId: tranId },
+            data: { status: "FAILED" }
+        });
+
+        const updatedBooking = await tx.booking.update({
+            where: { id: bookingId },
+            data: { status: "CONFIRMED" } 
+        });
+
+        return updatedBooking;
+    });
+};
 
 
-// Get payment history for a specific user
-const getPaymentHistoryFromDB = async (userId: string) => {
-    return await prisma.payment.findMany({
-        where: {
+
+
+// Handle Cancelled Payment
+const handleCancelledPaymentInDB = async (tranId: string, bookingId: string) => {
+    return await prisma.$transaction(async (tx) => {
+        await tx.payment.update({
+            where: { transactionId: tranId },
+            data: { status: "CANCELLED" }
+        });
+
+        const updatedBooking = await tx.booking.update({
+            where: { id: bookingId },
+            data: { status: "CONFIRMED" }
+        });
+
+        return updatedBooking;
+    });
+};
+
+
+
+
+
+// Get payment history based on User Role (Admin, Landlord, Tenant)
+const getPaymentHistoryFromDB = async (userId: string, role: string) => {
+    let whereCondition: any = {};
+    if (role === "TENANT") {
+        whereCondition = {
             booking: {
                 tenantId: userId
             }
-        },
+        };
+    }
+
+    if (role === "LANDLORD") {
+        whereCondition = {
+            booking: {
+                property: {
+                    landlordId: userId
+                }
+            }
+        };
+    }
+
+    return await prisma.payment.findMany({
+        where: whereCondition, 
         include: {
             booking: {
-                include: { property: true }
+                include: { 
+                    property: true,
+                    tenant: { omit: { password: true } }
+                }
             }
         },
         orderBy: { createdAt: 'desc' }
     });
-}
+};
 
 
 
 
-// Get specific payment details by ID
-const getPaymentDetailsFromDB = async (id: string) => {
-    return await prisma.payment.findUniqueOrThrow({
+
+// Get specific payment details by ID with strict security check
+const getPaymentDetailsFromDB = async (id: string, userId: string, role: string) => {
+    const payment = await prisma.payment.findUniqueOrThrow({
         where: { id },
         include: {
             booking: {
-                include: { property: true, tenant: true }
+                include: { property: true, tenant: { omit: { password: true } } }
             }
         }
     });
-}
 
+    if (role === "ADMIN") {
+        return payment;
+    }
+
+    if (role === "TENANT" && payment.booking.tenantId !== userId) {
+        throw new Error("You are not authorized to view this payment details!");
+    }
+
+    if (role === "LANDLORD" && payment.booking.property.landlordId !== userId) {
+        throw new Error("This payment does not belong to your property listings!");
+    }
+
+    return payment;
+};
 
 
 
 
 export const paymentService = {
-    initialPayement,
+    initialPayment, 
     verifyPayment,
     getPaymentHistoryFromDB,
-    getPaymentDetailsFromDB
-}
+    getPaymentDetailsFromDB,
+    handleFailedPaymentInDB,
+    handleCancelledPaymentInDB
+};

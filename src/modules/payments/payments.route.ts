@@ -23,17 +23,37 @@ router.post(
     PaymentController.confirmPayment
 );
 
+
+
+// Payment Failed
+router.post(
+    '/fail',
+    PaymentController.failPayment
+);
+
+
+
+// Payment Cancelled
+router.post(
+    '/cancel',
+    PaymentController.cancelPayment
+);
+
+
+
 // Payment History Route (Only accessible by TENANT role)
 router.get(
     '/',
-    auth(Role.TENANT),
+    auth( Role.TENANT, Role.ADMIN, Role.LANDLORD ),
     PaymentController.getPaymentHistory
 );
+
+
 
 // Payment Details Route (Accessible by TENANT, LANDLORD, and ADMIN roles)
 router.get(
     '/:id',
-    auth( Role.TENANT, Role.LANDLORD ),
+    auth( Role.TENANT, Role.LANDLORD, Role.ADMIN ),
     PaymentController.getPaymentDetails
 );
 
