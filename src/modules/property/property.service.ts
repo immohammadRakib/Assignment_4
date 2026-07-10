@@ -27,7 +27,11 @@ const createProperty = async (payload : ICreatePropertyPayload, userId : string)
 
 // Get All Properties
 const getAllProperties = async (query: Record<string, any>) => {
-    const { role, landlordId, search, location, categoryId, minPrice, maxPrice, sortBy } = query;
+    const { role, landlordId, search, location, categoryId, minPrice, maxPrice, sortBy, page = 1, limit = 5 } = query;
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+    const skip = (pageNumber - 1) * limitNumber;
 
     let roleBasedCondition: any = {};
     if (role === "ADMIN") {
@@ -62,15 +66,31 @@ const getAllProperties = async (query: Record<string, any>) => {
         ? [{ createdAt: "desc" }] 
         : [{ views: "desc" }, { reviews: { _count: "desc" } }] as any;
 
-    return await prisma.property.findMany({
+    const total = await prisma.property.count({
+        where: finalWhereCondition
+    });    
+
+    const result = await prisma.property.findMany({
         where: finalWhereCondition,
         orderBy: orderByCondition,
+        skip: skip,  
+        take: limitNumber, 
         include: {
             landlord: { omit: { password: true } },
             category: true,
             _count: { select: { reviews: true } }
         }
     });
+
+    return {
+        meta: {
+            page: pageNumber,
+            limit: limitNumber,
+            total,
+            totalPage: Math.ceil(total / limitNumber)
+        },
+        data: result
+    };
 };
 
 
