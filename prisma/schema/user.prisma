@@ -1,21 +1,23 @@
-model User {
-  id         String   @id @default(uuid())
-  email      String   @unique
-  password   String
-  name       String
-  role       Role     @default(TENANT)
-  activeStatus ActiveStatus @default(ACTIVE)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
 
-  // Relations
+model User {
+  id           String       @id @default(uuid())
+  email        String       @unique
+  password     String
+  name         String
+  role         Role         @default(TENANT)
+  activeStatus ActiveStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
   profile    Profile?
   properties Property[] @relation("LandlordProperties")
   bookings   Booking[]  @relation("TenantBookings")
-  reviews Review[] @relation("TenantReviews")
+  reviews    Review[]   @relation("TenantReviews")
 
   @@map("users")
 }
+
+
 
 model Profile {
   id           String   @id @default(uuid())
@@ -23,11 +25,10 @@ model Profile {
   phone        String?
   address      String?
   profileImage String?
-  bio          String?
+  bio          String?  @db.Text
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("profiles")

@@ -1,20 +1,22 @@
+
 model Booking {
   id         String        @id @default(uuid())
   tenantId   String
   propertyId String
+  landlordId String
   startDate  DateTime
   endDate    DateTime
-  totalPrice Float
+  totalPrice Decimal       @db.Decimal(10, 2)
   status     BookingStatus @default(PENDING)
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
-  // Relations
   tenant   User     @relation("TenantBookings", fields: [tenantId], references: [id], onDelete: Cascade)
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  payment Payment?
+  payment  Payment?
+  review   Review?  @relation("BookingReview")
 
-  @@index([startDate, endDate])
-
+  @@index([tenantId, propertyId])
+  @@index([startDate, endDate]) 
   @@map("bookings")
 }

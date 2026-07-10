@@ -1,14 +1,16 @@
+
 model Payment {
   id            String        @id @default(uuid())
   bookingId     String        @unique 
-  amount        Float
+  propertyId    String 
+  amount        Decimal       @db.Decimal(10, 2)
   transactionId String        @unique 
   status        PaymentStatus @default(PENDING)
   method        String 
+  paidAt        DateTime?     
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  // Relation with Booking model
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@map("payments")

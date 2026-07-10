@@ -1,16 +1,18 @@
+
 model Review {
   id         String   @id @default(uuid())
   tenantId   String
   propertyId String
-  rating     Int
-  comment    String  @db.Text
+  bookingId  String   @unique 
+  rating     Int      @default(5)
+  comment    String   @db.Text
   createdAt  DateTime @default(now())
 
-  // Relations
-  tenant User @relation("TenantReviews", fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant   User     @relation("TenantReviews", fields: [tenantId], references: [id], onDelete: Cascade)
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  booking  Booking  @relation("BookingReview", fields: [bookingId], references: [id], onDelete: Cascade)
 
+  @@index([propertyId])
   @@index([comment]) 
-
   @@map("reviews")
 }
