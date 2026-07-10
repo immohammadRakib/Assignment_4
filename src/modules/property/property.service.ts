@@ -161,7 +161,14 @@ const getPropertyById = async (propertyId: string, role?: string) => {
             },
           ],
           include: {
-            tenant: { select: { name: true, profileImage: true } },
+            tenant: { select: { 
+                name: true,
+                profile: {
+                  select: {
+                    profileImage: true 
+                  }
+                },
+              } },
           },
         },
         bookings: {
