@@ -96,8 +96,10 @@ const verifyPayment = async (tranId: string, bookingId: string, paymentResponse:
                     propertyId: currentBooking.propertyId,
                     id: { not: bookingId }, 
                     status: "PENDING",
-                    startDate: { lte: currentBooking.endDate },
-                    endDate: { gte: currentBooking.startDate }
+                    AND: [
+                        { startDate: { lt: currentBooking.endDate } },
+                        { endDate: { gt: currentBooking.startDate } }
+                    ]
                 },
                 data: {
                     status: "REJECTED" 
@@ -126,7 +128,7 @@ const handleFailedPaymentInDB = async (tranId: string, bookingId: string) => {
 
         const updatedBooking = await tx.booking.update({
             where: { id: bookingId },
-            data: { status: "CONFIRMED" } 
+            data: { status: "PENDING" } 
         });
 
         return updatedBooking;
@@ -146,7 +148,7 @@ const handleCancelledPaymentInDB = async (tranId: string, bookingId: string) => 
 
         const updatedBooking = await tx.booking.update({
             where: { id: bookingId },
-            data: { status: "CONFIRMED" }
+            data: { status: "PENDING" }
         });
 
         return updatedBooking;

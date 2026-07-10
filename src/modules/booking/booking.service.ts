@@ -47,7 +47,7 @@ const createBookingRequest = async (payload: any, tenantId: string) => {
   const isConflict = await prisma.booking.findFirst({
     where: {
       propertyId,
-      status: { in: [BookingStatus.CONFIRMED] }, 
+      status: { in: ["CONFIRMED", "PAID"] },
       OR: [
         {
           AND: [
@@ -148,7 +148,7 @@ const getBookingById = async (bookingId: string) => {
 
 
 
-// Handle Booking Status Update by Landlord
+// Handle Booking Status Update 
 const handleBookingStatusUpdate = async (
   bookingId: string,
   landlordId: string,
@@ -168,16 +168,16 @@ const handleBookingStatusUpdate = async (
       data: { status },
     });
 
-    if (status === BookingStatus.CONFIRMED) {
-      await tx.property.update({
-        where: { id: booking.propertyId },
-        data: { isAvailable: false },
-      });
+    if (status === BookingStatus.PAID) {
       await tx.booking.updateMany({
         where: {
           propertyId: booking.propertyId,
           status: BookingStatus.PENDING,
           id: { not: bookingId },
+          AND: [
+            { startDate: { lt: booking.endDate } },
+            { endDate: { gt: booking.startDate } }
+          ]
         },
         data: { status: BookingStatus.CANCELLED },
       });
@@ -199,6 +199,10 @@ const cancelBookingByTenant = async (bookingId: string, tenantId: string) => {
       throw new Error("You are not authorized to cancel this booking!");
     }
 
+    if (booking.status === BookingStatus.CONFIRMED || booking.status === BookingStatus.PAID) {
+      throw new Error("Cannot cancel. This booking is already confirmed or paid. Please contact the landlord.");
+    }
+
     if (booking.status === BookingStatus.CANCELLED) {
       throw new Error("This booking is already cancelled!");
     }
@@ -206,11 +210,6 @@ const cancelBookingByTenant = async (bookingId: string, tenantId: string) => {
     const updatedBooking = await tx.booking.update({
       where: { id: bookingId },
       data: { status: BookingStatus.CANCELLED },
-    });
-
-    await tx.property.update({
-      where: { id: booking.propertyId },
-      data: { isAvailable: true },
     });
 
     return updatedBooking;

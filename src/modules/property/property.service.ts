@@ -5,6 +5,9 @@ import {
   IUpdatePropertyPayload,
 } from "./property.interface";
 
+
+
+
 // Create Property
 const createProperty = async (
   payload: ICreatePropertyPayload,
@@ -23,6 +26,9 @@ const createProperty = async (
 
   return result;
 };
+
+
+
 
 // Get All Properties
 const getAllProperties = async (query: Record<string, any>) => {
@@ -123,6 +129,9 @@ const getAllProperties = async (query: Record<string, any>) => {
   };
 };
 
+
+
+
 // Get Property By Id
 const getPropertyById = async (propertyId: string, role?: string) => {
   return await prisma.$transaction(async (tx) => {
@@ -155,10 +164,15 @@ const getPropertyById = async (propertyId: string, role?: string) => {
           },
         },
         bookings: {
-          where:
+          where: 
             role === "ADMIN" || role === "LANDLORD"
-              ? {}
-              : { status: "CONFIRMED" },
+              ? {} 
+              : { status: { in: ["CONFIRMED", "PAID"] }, endDate: { gte: new Date() } }, 
+          select: {
+            startDate: true, 
+            endDate: true,
+            status: true
+          },    
           orderBy: { createdAt: "desc" },
         },
         _count: {
@@ -170,6 +184,9 @@ const getPropertyById = async (propertyId: string, role?: string) => {
     return property;
   });
 };
+
+
+
 
 // Update Property
 const updateProperty = async (
@@ -205,6 +222,9 @@ const updateProperty = async (
   return result;
 };
 
+
+
+
 // Update Availability Status by Landlord
 const updateAvailability = async (
   id: string,
@@ -232,6 +252,8 @@ const updateAvailability = async (
   return result;
 };
 
+
+
 //Update Property Status by Admin
 const changePropertyStatusByAdmin = async (
   propertyId: string,
@@ -251,6 +273,9 @@ const changePropertyStatusByAdmin = async (
   return result;
 };
 
+
+
+
 // Delete Property
 const deleteProperty = async (propertyId: string, ownerId: string) => {
   const property = await prisma.property.findUniqueOrThrow({
@@ -269,6 +294,8 @@ const deleteProperty = async (propertyId: string, ownerId: string) => {
     },
   });
 };
+
+
 
 // Get Own Properties
 const getMyProperties = async (landlordId: string) => {
@@ -299,6 +326,9 @@ const getMyProperties = async (landlordId: string) => {
 
   return result;
 };
+
+
+
 
 export const PropertyService = {
   createProperty,
