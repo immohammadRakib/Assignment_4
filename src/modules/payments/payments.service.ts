@@ -26,10 +26,11 @@ const initialPayment = async (bookingId: string, user: User) => {
     await prisma.payment.create({
         data: {
             transactionId: tranId,
+            propertyId: booking.propertyId,
             bookingId: bookingId,
             amount: booking.totalPrice,
             status: "PENDING", 
-            method: "UNKNOWN"
+            method: "SSLCOMMERZ",
         }
     });
 

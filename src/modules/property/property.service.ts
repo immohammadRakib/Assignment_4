@@ -58,7 +58,7 @@ const getAllProperties = async (query: Record<string, any>) => {
   } else {
     roleBasedCondition = {
       isDeleted: false,
-      status: PropertyStatus.AVAILABLE,
+      status: PropertyStatus.APPROVED,
       isAvailable: true,
       landlord: {
         is: { activeStatus: "ACTIVE" },

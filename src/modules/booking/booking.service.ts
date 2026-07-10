@@ -80,12 +80,13 @@ const createBookingRequest = async (payload: any, tenantId: string) => {
   
   if (totalDays === 0) totalDays = 1; 
 
-  const autoTotalPrice = totalDays * property.pricePerDay;
+  const autoTotalPrice = property.pricePerDay.mul(totalDays);
 
   const result = await prisma.booking.create({
     data: {
       tenantId,
       propertyId,
+      landlordId: property.landlordId,
       startDate: checkIn,
       endDate: checkOut,
       totalPrice: autoTotalPrice,
