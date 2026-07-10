@@ -27,72 +27,43 @@ const createProperty = async (payload : ICreatePropertyPayload, userId : string)
 
 // Get All Properties
 const getAllProperties = async (query: Record<string, any>) => {
-    const { 
-        role, 
-        landlordId, 
-        search, 
-        location,    
-        categoryId,  
-        minPrice,   
-        maxPrice,    
-        sortBy       
-    } = query;
+    const { role, landlordId, search, location, categoryId, minPrice, maxPrice, sortBy } = query;
 
-    let whereCondition: any = {};
-    
+    let roleBasedCondition: any = {};
     if (role === "ADMIN") {
-        const properties = await prisma.property.findMany({
-            where: {}, 
-            orderBy: sortBy === "trending" ? [{ views: "desc" }, { reviews: { _count: "desc" } }] : [{ createdAt: "desc" }],
-            include: {
-                landlord: { omit: { password: true } },
-                category: true,
-                _count: { select: { reviews: true } }
-            }
-        });
-        return properties;
+        roleBasedCondition = {}; 
+    } else if (role === "LANDLORD" && landlordId) {
+        roleBasedCondition = { landlordId }; 
+    } else {
+        roleBasedCondition = { status: PropertyStatus.AVAILABLE, isAvailable: true }; 
     }
 
-    if (role === "LANDLORD" && landlordId) {
-        whereCondition = { landlordId: landlordId };
-    }
-    else {
-        whereCondition = {
-            status: PropertyStatus.AVAILABLE, 
-            isAvailable: true 
-        };
-    }
-    if (location) {
-        whereCondition.location = { contains: location, mode: "insensitive" };
-    }
-    
-    if (categoryId) {
-        whereCondition.categoryId = categoryId;
-    }
+    const filterCondition: any = {};
+    if (location) filterCondition.location = { contains: location, mode: "insensitive" };
+    if (categoryId) filterCondition.categoryId = categoryId;
 
     if (minPrice || maxPrice) {
-        whereCondition.pricePerDay = {};
-        if (minPrice) whereCondition.pricePerDay.gte = Number(minPrice);
-        if (maxPrice) whereCondition.pricePerDay.lte = Number(maxPrice);
+        const priceFilter: any = {};
+        if (minPrice) priceFilter.gte = Number(minPrice);
+        if (maxPrice) priceFilter.lte = Number(maxPrice);
+        filterCondition.pricePerDay = priceFilter;
     }
 
     if (search) {
-        whereCondition.OR = [
+        filterCondition.OR = [
             { title: { contains: search, mode: "insensitive" } },
             { description: { contains: search, mode: "insensitive" } }
         ];
     }
 
-    let orderByCondition: any = [{ createdAt: "desc" }];
-    if (sortBy === "trending") {
-        orderByCondition = [
-            { views: "desc" },               
-            { reviews: { _count: "desc" } }  
-        ];
-    }
+    const finalWhereCondition = { ...roleBasedCondition, ...filterCondition };
 
-    const properties = await prisma.property.findMany({
-        where: whereCondition,
+    const orderByCondition = sortBy === "newest" 
+        ? [{ createdAt: "desc" }] 
+        : [{ views: "desc" }, { reviews: { _count: "desc" } }] as any;
+
+    return await prisma.property.findMany({
+        where: finalWhereCondition,
         orderBy: orderByCondition,
         include: {
             landlord: { omit: { password: true } },
@@ -100,8 +71,6 @@ const getAllProperties = async (query: Record<string, any>) => {
             _count: { select: { reviews: true } }
         }
     });
-
-    return properties;
 };
 
 
