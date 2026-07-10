@@ -14,5 +14,7 @@ model Booking {
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   payment Payment?
 
+  @@index([startDate, endDate])
+
   @@map("bookings")
 }

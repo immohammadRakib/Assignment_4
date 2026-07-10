@@ -204,9 +204,17 @@ const getPaymentDetailsFromDB = async (id: string, userId: string, role: string)
         where: { id },
         include: {
             booking: {
-                include: { property: true, tenant: { omit: { password: true } } }
+                include: {
+                    property: {
+                        select: { landlordId: true, title: true, location: true } 
+                    },
+                    tenant: {
+                        select: { id: true, name: true, email: true } 
+                    }
+                }
             }
         }
+        
     });
 
     if (role === "ADMIN") {

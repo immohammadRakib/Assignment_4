@@ -28,7 +28,7 @@ model Property {
 
 model Category {
   id         String     @id @default(uuid())
-  name       String     @unique // e.g., Apartment, House, Studio
+  name       String     @unique 
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 

@@ -1,10 +1,10 @@
 model Payment {
   id            String        @id @default(uuid())
-  bookingId     String        @unique // 1:1 relation er jonno unique dorkar
+  bookingId     String        @unique 
   amount        Float
-  transactionId String        @unique // Stripe/SSLCommerz ID
+  transactionId String        @unique 
   status        PaymentStatus @default(PENDING)
-  method        String // e.g., "STRIPE"
+  method        String 
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 

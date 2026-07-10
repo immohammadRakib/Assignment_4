@@ -1,8 +1,9 @@
+
 enum ActiveStatus {
   ACTIVE
   BLOCKED
+  DELETED
 }
-
 
 enum Role {
   ADMIN
@@ -10,20 +11,20 @@ enum Role {
   TENANT
 }
 
-
 enum PropertyStatus {
   PENDING
-  AVAILABLE
-  RENTED
-  SUSPENDED
+  APPROVED
+  REJECTED
+  ARCHIVED
 }
 
 enum BookingStatus {
   PENDING
   CONFIRMED
-  CANCELED
-  PAID
   REJECTED
+  PAID
+  CANCELLED
+  COMPLETED
 }
 
 enum PaymentStatus {
@@ -31,11 +32,4 @@ enum PaymentStatus {
   PAID
   FAILED
   CANCELLED
-}
-
-
-enum SubscriptionStatus{
-  ACTIVE
-  CANCELED
-  EXPIRED
 }
