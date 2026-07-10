@@ -1,9 +1,7 @@
-import { prisma } from "../../lib/prisma"
+import { BookingStatus } from "../../../generated/prisma/enums";
+import { prisma } from "../../lib/prisma";
 
-
-
-
-// Admin Stats For Dashboard
+// ১. Admin Stats
 const getAdminDashboardStats = async () => {
     const [
         totalTenants,
@@ -12,17 +10,23 @@ const getAdminDashboardStats = async () => {
         totalProperties,
         totalCategories,
         totalRentalRequests,
-        totalConfirmedBookings
+        totalConfirmedBookings,
+        totalPlatformEarnings
     ] = await Promise.all([
         prisma.user.count({ where: { role: "TENANT" } }),
         prisma.user.count({ where: { role: "LANDLORD" } }),
-        prisma.user.count({ where: { activeStatus: "BLOCKED" } }), // 👈 আপনার এনাম ফিল্ড অনুযায়ী নিখুঁত
+        prisma.user.count({ where: { activeStatus: "BLOCKED" } }),
         
         prisma.property.count(),
         prisma.category.count(),
 
         prisma.booking.count(),
-        prisma.booking.count({ where: { status: "CONFIRMED" } })
+        prisma.booking.count({ where: { status: BookingStatus.CONFIRMED } }),
+        
+        prisma.booking.aggregate({
+            where: { status: BookingStatus.PAID },
+            _sum: { totalPrice: true }
+        })
     ]);
 
     return {
@@ -32,14 +36,12 @@ const getAdminDashboardStats = async () => {
         totalProperties,
         totalCategories,
         totalRentalRequests,
-        totalConfirmedBookings
+        totalConfirmedBookings,
+        totalPlatformEarnings: Number(totalPlatformEarnings._sum.totalPrice) || 0
     };
 };
 
-
-
-
-// Landlord Stats For Dashboard
+// ২. Landlord Stats
 const getLandlordDashboardStats = async (landlordId: string) => {
     const [
         myTotalProperties,
@@ -52,11 +54,11 @@ const getLandlordDashboardStats = async (landlordId: string) => {
         myTotalEarningsAggregate
     ] = await Promise.all([
         prisma.property.count({ where: { landlordId } }),
-        prisma.property.count({ where: { landlordId, isAvailable: true } }),
-        prisma.booking.count({ where: { property: { landlordId } } }),
+        prisma.property.count({ where: { landlordId, isAvailable: true, status: "APPROVED" } }),
+        prisma.booking.count({ where: { landlordId } }), 
 
-        prisma.booking.count({ where: { property: { landlordId }, status: "PENDING" } }),
-        prisma.booking.count({ where: { property: { landlordId }, status: "CONFIRMED" } }),
+        prisma.booking.count({ where: { landlordId, status: BookingStatus.PENDING } }),
+        prisma.booking.count({ where: { landlordId, status: BookingStatus.CONFIRMED } }),
  
         prisma.review.count({ where: { property: { landlordId } } }),
         
@@ -66,13 +68,8 @@ const getLandlordDashboardStats = async (landlordId: string) => {
         }),
         
         prisma.booking.aggregate({
-            where: {
-                property: { landlordId },
-                status: "PAID" 
-            },
-            _sum: {
-                totalPrice: true 
-            }
+            where: { landlordId, status: BookingStatus.PAID },
+            _sum: { totalPrice: true }
         })
     ]);
 
@@ -84,17 +81,11 @@ const getLandlordDashboardStats = async (landlordId: string) => {
         myConfirmedBookings,
         myTotalReviews,
         myPropertyViews: myPropertyViewsAggregate._sum.views || 0,
-        myTotalEarnings: myTotalEarningsAggregate._sum.totalPrice || 0 
+        myTotalEarnings: Number(myTotalEarningsAggregate._sum.totalPrice) || 0 
     };
 };
 
-
-
-
-
-
-
-// Tenant Stats For Dashboard
+// ৩. Tenant Stats
 const getTenantDashboardStats = async (tenantId: string) => {
     const [
         myTotalBookings,
@@ -102,38 +93,25 @@ const getTenantDashboardStats = async (tenantId: string) => {
         myConfirmedBookings,
         myTotalReviewsWritten,
         myTotalSpentAggregate,
-        myPayments
+        recentPayments
     ] = await Promise.all([
         prisma.booking.count({ where: { tenantId } }),
-
-        prisma.booking.count({ where: { tenantId, status: "PENDING" } }),
-
-        prisma.booking.count({ where: { tenantId, status: "CONFIRMED" } }),
-
+        prisma.booking.count({ where: { tenantId, status: BookingStatus.PENDING } }),
+        prisma.booking.count({ where: { tenantId, status: BookingStatus.CONFIRMED } }),
         prisma.review.count({ where: { tenantId } }),
 
         prisma.booking.aggregate({
-            where: {
-                tenantId,
-                paymentStatus: "SUCCESS" 
-            },
-            _sum: {
-                totalPrice: true 
-            }
+            where: { tenantId, status: BookingStatus.PAID },
+            _sum: { totalPrice: true }
         }),
 
         prisma.booking.findMany({
-            where: {
-                tenantId,
-                paymentStatus: "SUCCESS"
-            },
+            where: { tenantId, status: BookingStatus.PAID },
             select: {
                 id: true,
                 totalPrice: true,
                 createdAt: true,
-                property: {
-                    select: { title: true }
-                }
+                property: { select: { title: true } }
             },
             orderBy: { createdAt: "desc" },
             take: 5 
@@ -145,14 +123,10 @@ const getTenantDashboardStats = async (tenantId: string) => {
         myPendingBookings,
         myConfirmedBookings,
         myTotalReviewsWritten,
-        myTotalSpent: myTotalSpentAggregate._sum.totalPrice || 0,
-        myPayments
+        myTotalSpent: Number(myTotalSpentAggregate._sum.totalPrice) || 0,
+        recentPayments
     };
 };
-
-
-
-
 
 export const DashboardService = {
     getAdminDashboardStats,
