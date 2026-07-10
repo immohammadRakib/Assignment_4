@@ -13,10 +13,12 @@ const getDashboardStats = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user?.id;
     let result;
 
-    if (role === "ADMIN") {
+    if ( role === "ADMIN" ) {
         result = await DashboardService.getAdminDashboardStats();
-    } else if (role === "LANDLORD") {
-        result = await DashboardService.getLandlordDashboardStats(userId as string);
+    } else if ( role === "LANDLORD" ) {
+        result = await DashboardService.getLandlordDashboardStats( userId as string );
+    } else if ( role === "TENANT" ) {
+        result = await DashboardService.getTenantDashboardStats( userId as string )
     } else {
         throw new Error("You are not authorized to view dashboard stats!");
     }

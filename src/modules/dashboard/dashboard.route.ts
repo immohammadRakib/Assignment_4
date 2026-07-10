@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get(
     '/stats', 
-    auth(Role.ADMIN, Role.LANDLORD), 
+    auth( Role.ADMIN, Role.LANDLORD, Role.TENANT ), 
     DashboardController.getDashboardStats
 );
 

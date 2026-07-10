@@ -91,7 +91,71 @@ const getLandlordDashboardStats = async (landlordId: string) => {
 
 
 
+
+
+
+// Tenant Stats For Dashboard
+const getTenantDashboardStats = async (tenantId: string) => {
+    const [
+        myTotalBookings,
+        myPendingBookings,
+        myConfirmedBookings,
+        myTotalReviewsWritten,
+        myTotalSpentAggregate,
+        myPayments
+    ] = await Promise.all([
+        prisma.booking.count({ where: { tenantId } }),
+
+        prisma.booking.count({ where: { tenantId, status: "PENDING" } }),
+
+        prisma.booking.count({ where: { tenantId, status: "CONFIRMED" } }),
+
+        prisma.review.count({ where: { tenantId } }),
+
+        prisma.booking.aggregate({
+            where: {
+                tenantId,
+                paymentStatus: "SUCCESS" 
+            },
+            _sum: {
+                totalPrice: true 
+            }
+        }),
+
+        prisma.booking.findMany({
+            where: {
+                tenantId,
+                paymentStatus: "SUCCESS"
+            },
+            select: {
+                id: true,
+                totalPrice: true,
+                createdAt: true,
+                property: {
+                    select: { title: true }
+                }
+            },
+            orderBy: { createdAt: "desc" },
+            take: 5 
+        })
+    ]);
+
+    return {
+        myTotalBookings,
+        myPendingBookings,
+        myConfirmedBookings,
+        myTotalReviewsWritten,
+        myTotalSpent: myTotalSpentAggregate._sum.totalPrice || 0,
+        myPayments
+    };
+};
+
+
+
+
+
 export const DashboardService = {
     getAdminDashboardStats,
-    getLandlordDashboardStats
+    getLandlordDashboardStats,
+    getTenantDashboardStats
 };
