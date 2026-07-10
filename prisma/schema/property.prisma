@@ -18,6 +18,7 @@ model Property {
   city        String
   pricePerDay Decimal        @db.Decimal(10, 2) 
   images      String[]
+  isDeleted   Boolean        @default(false)
   status      PropertyStatus @default(APPROVED)
   views       Int            @default(0)
   isAvailable Boolean        @default(true)
