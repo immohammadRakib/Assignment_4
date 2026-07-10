@@ -27,6 +27,7 @@ const initialPayment = async (bookingId: string, user: User) => {
         data: {
             transactionId: tranId,
             propertyId: booking.propertyId,
+            landlordId: booking.property.landlordId,
             bookingId: bookingId,
             amount: booking.totalPrice,
             status: "PENDING", 
@@ -37,7 +38,7 @@ const initialPayment = async (bookingId: string, user: User) => {
     const paymentData = {
         store_id: config.ssl_commerz_store_id,
         store_passwd: config.ssl_commerz_store_password,
-        total_amount: booking.totalPrice.toString(),
+        total_amount: booking.totalPrice.toFixed(2),
         currency: "BDT",
         tran_id: tranId,
         success_url: `${config.app_url}/api/payments/confirm?tranId=${tranId}&bookingId=${bookingId}`,
