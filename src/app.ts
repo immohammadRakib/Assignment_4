@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import config from "./config";
 import cookieParser from "cookie-parser";
+import { prisma } from "./lib/prisma";
 import { UserRoutes } from './modules/user/user.route';
 import { authRoutes } from './modules/auth/auth.route';
 import { RentalRoutes } from "./modules/booking/booking.route";
@@ -27,6 +28,19 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
+
+
+app.use((req, res, next) => {
+  res.on('finish', async () => {
+    try {
+      await prisma.$disconnect(); 
+    } catch (error) {
+      console.error("Prisma cleanup error:", error);
+    }
+  });
+  next();
+});
+
 
 
 // User Register
