@@ -110,56 +110,51 @@ const getAllProperties = async (query: Record<string, any>) => {
 
 
 // Get Property By Id 
-const getPropertyById = async (propertyId : string) => {
-    const transactionResult = await prisma.$transaction(
-        async (tx) => {
-            await tx.property.update({
-                where: {
-                    id: propertyId,
+const getPropertyById = async (propertyId: string, role?: string) => {
+    return await prisma.$transaction(async (tx) => {
+        await tx.property.update({
+            where: { id: propertyId },
+            data: { views: { increment: 1 } },
+        });
+
+        const property = await tx.property.findUniqueOrThrow({
+            where: { id: propertyId },
+            include: {
+                landlord: {
+                    select: { id: true, name: true, email: true } 
                 },
-                data: {
-                    views: {
-                        increment: 1
-                    },
-                }
-            });
-
-            const property = await tx.property.findUniqueOrThrow({
-                where: {
-                    id: propertyId
-                },
-
-                include: {
-                    landlord: {
-                        omit: {
-                            password: true
-                        }
-                    },
-
-                    bookings: {
-                        where: {
-                            status: BookingStatus.CONFIRMED
+                category: true,
+                reviews: {
+                    orderBy: [
+                        { rating: 'desc' },
+                        {
+                            _relevance: {
+                                fields: ['comment'],
+                                search: 'excellent | amazing | fantastic | good | nice | enjoyable | prefer',
+                                sort: 'desc',
+                            },
                         },
-
-                        orderBy: {
-                            createdAt: "desc"
-                        }
-                    },
-
-                    _count: {
-                        select: {
-                            bookings: true
-                        }
+                    ],
+                    include: {
+                        tenant: { select: { name: true, profileImage: true } }
                     }
+                },
+                bookings: {
+                    where: (role === "ADMIN" || role === "LANDLORD") 
+                        ? {} 
+                        : { status: "CONFIRMED" },
+                    orderBy: { createdAt: "desc" }
+                },
+                _count: {
+                    select: { reviews: true, bookings: true }
                 }
-            });
-            return property
-        }
-    );
+            }
+        });
 
-    return transactionResult
+        return property;
+    });
+};
 
-}
 
 
 

@@ -21,7 +21,7 @@ enum PropertyStatus {
 enum BookingStatus {
   PENDING
   CONFIRMED
-  CANCELLED
+  CANCELED
   PAID
   REJECTED
 }

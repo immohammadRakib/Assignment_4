@@ -68,7 +68,10 @@ const getPropertyById = catchAsync(async ( req : Request, res : Response ) => {
         throw new Error("Property Id Required In Params")
     }
 
-    const result = await PropertyService.getPropertyById( propertyId as string );
+    const result = await PropertyService.getPropertyById( 
+        propertyId as string, 
+        req.user?.role 
+    );
 
     sendResponse(res, {
         success : true,
