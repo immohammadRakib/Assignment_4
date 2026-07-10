@@ -64,7 +64,13 @@ const getCategoryWithPropertyCount = async (id: string) => {
         _count: {
             select: { properties: true }, 
         },
-        properties: true,
+        properties: {
+        select: {
+          id: true,
+          title: true,
+          pricePerDay: true,
+        }
+      },
     },
   });
 

@@ -10,7 +10,10 @@ import httpStatus from "http-status";
 
 // Get All Users
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-    const result = await AdminService.getAllUsers();
+
+    const query = req.query; 
+
+    const result = await AdminService.getAllUsers( query );
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -36,7 +39,10 @@ const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
 
 // Get All Property
 const getAllProperties = catchAsync(async (req: Request, res: Response) => {
-    const result = await AdminService.getAllProperties();
+
+    const query = req.query; 
+
+    const result = await AdminService.getAllProperties( query );
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -48,7 +54,10 @@ const getAllProperties = catchAsync(async (req: Request, res: Response) => {
 
 // Get All Rentals
 const getAllRentals = catchAsync(async (req: Request, res: Response) => {
-    const result = await AdminService.getAllRentals();
+
+    const query = req.query; 
+
+    const result = await AdminService.getAllRentals( query );
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

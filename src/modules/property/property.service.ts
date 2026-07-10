@@ -53,7 +53,7 @@ const getAllProperties = async (query: Record<string, any>) => {
 
   if (role === "ADMIN") {
     roleBasedCondition = {};
-  } else if (role === "LANDLORD" && landlordId) {
+  } else if (role === "LANDLORD" && landlordId && query.dashboard === "true" ) {
     roleBasedCondition = { landlordId };
   } else {
     roleBasedCondition = {
@@ -88,6 +88,7 @@ const getAllProperties = async (query: Record<string, any>) => {
   if (search) {
     filterCondition.OR = [
       { title: { contains: search, mode: "insensitive" } },
+      { city: { contains: search, mode: "insensitive" } },
       { description: { contains: search, mode: "insensitive" } },
     ];
   }
@@ -203,12 +204,14 @@ const updateProperty = async (
   if (property.landlordId !== ownerId) {
     throw new Error("You are not the owner of this property!");
   }
+  
+  const { landlordId, views, id, createdAt, ...safePayload } = payload as any;
 
   const result = await prisma.property.update({
     where: {
       id: propertyId,
     },
-    data: payload,
+    data: safePayload,
     include: {
       landlord: {
         omit: {

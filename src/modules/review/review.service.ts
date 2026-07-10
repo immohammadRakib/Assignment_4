@@ -21,6 +21,13 @@ const createReview = async (tenantId: string, payload: ICreateReviewPayload) => 
                 propertyId: propertyId,          
                 tenantId: tenantId               
             }
+        },
+        include: {
+          booking: {
+            include: {
+                property: true
+            }
+          }
         }
     });
 
@@ -46,6 +53,7 @@ const createReview = async (tenantId: string, payload: ICreateReviewPayload) => 
     const result = await prisma.review.create({
         data: {
             propertyId,
+            landlordId: hasPaid.booking.property.landlordId, 
             bookingId,
             tenantId,
             rating,

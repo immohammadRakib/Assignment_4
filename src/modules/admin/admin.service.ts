@@ -1,22 +1,29 @@
-import { ActiveStatus } from "../../../generated/prisma/client";
+import { ActiveStatus, BookingStatus, PropertyStatus } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
 
 
 
+// Get All User with Pagination 
+const getAllUsers = async (query: Record<string, any>) => {
+    const { page = 1, limit = 10 } = query;
+    const skip = (Number(page) - 1) * Number(limit);
 
+    const [total, result] = await prisma.$transaction([
+        prisma.user.count(),
+        prisma.user.findMany({
+            omit: { password: true },
+            include: { profile: true },
+            skip,
+            take: Number(limit),
+            orderBy: { createdAt: 'desc' }
+        })
+    ]);
 
-// Get All User 
-const getAllUsers = async () => {
-    return await prisma.user.findMany({
-        omit: {
-            password: true 
-        },
-        include: {
-            profile: true 
-        },
-        orderBy: { createdAt: 'desc' }
-    });
+    return {
+        meta: { page: Number(page), limit: Number(limit), total, totalPage: Math.ceil(total / Number(limit)) },
+        data: result
+    };
 };
 
 
@@ -26,35 +33,73 @@ const updateUserStatus = async (id: string, status: ActiveStatus) => {
     return await prisma.user.update({
         where: { id },
         data: { activeStatus: status },
-        omit: {
-            password: true 
-        }
+        omit: { password: true }
     });
 };
 
 
 
-// Get All Property
-const getAllProperties = async () => {
-    return await prisma.property.findMany({
-        include: {
-            landlord: { select: { name: true, email: true } },
-            category: true
-        }
-    });
+// Get All Properties
+const getAllProperties = async (query: Record<string, any>) => {
+    const { status, page = 1, limit = 10 } = query;
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [total, result] = await prisma.$transaction([
+        prisma.property.count({ where: status ? { status: status as PropertyStatus } : {} }),
+        prisma.property.findMany({
+            where: status ? { status: status as PropertyStatus } : {},
+            include: {
+                landlord: { select: { id: true, name: true, email: true, activeStatus: true } },
+                category: true,
+                _count: { select: { reviews: true, bookings: true } }
+            },
+            skip,
+            take: Number(limit),
+            orderBy: { createdAt: 'desc' }
+        })
+    ]);
+
+    return {
+        meta: { page: Number(page), limit: Number(limit), total, totalPage: Math.ceil(total / Number(limit)) },
+        data: result
+    };
 };
 
 
 
-// All Rental Request
-const getAllRentals = async () => {
-    return await prisma.booking.findMany({
-        include: {
-            tenant: { select: { name: true, email: true } },
-            property: { select: { title: true, pricePerDay: true } }
-        },
-        orderBy: { createdAt: 'desc' }
-    });
+
+// All Rental Request with Pagination & Status Filter
+const getAllRentals = async (query: Record<string, any>) => {
+    const { status, page = 1, limit = 10 } = query;
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [total, result] = await prisma.$transaction([
+        prisma.booking.count({ where: status ? { status: status as BookingStatus } : {} }),
+        prisma.booking.findMany({
+            where: status ? { status: status as BookingStatus } : {},
+            include: {
+                tenant: { select: { id: true, name: true, email: true } },
+                property: { 
+                    select: { 
+                        id: true, 
+                        title: true, 
+                        pricePerDay: true, 
+                        landlordId: true,
+                        city: true 
+                    } 
+                },
+                payment: true 
+            },
+            skip,
+            take: Number(limit),
+            orderBy: { createdAt: 'desc' }
+        })
+    ]);
+
+    return {
+        meta: { page: Number(page), limit: Number(limit), total, totalPage: Math.ceil(total / Number(limit)) },
+        data: result
+    };
 };
 
 
