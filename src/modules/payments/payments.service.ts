@@ -24,17 +24,6 @@ const initialPayment = async (bookingId: string, user: User) => {
 
     const tranId = `TRNX-${Date.now()}`;
 
-    // await prisma.payment.create({
-    //     data: {
-    //         transactionId: tranId,
-    //         propertyId: booking.propertyId,
-    //         bookingId: bookingId,
-    //         amount: booking.totalPrice,
-    //         status: "PENDING", 
-    //         method: "SSLCOMMERZ",
-    //     }
-    // });
-
       await prisma.payment.upsert({
         where: { bookingId: bookingId },
         update: {

@@ -33,18 +33,18 @@ const confirmPayment = catchAsync(async (req: Request, res: Response) => {
     const { tranId, bookingId } = req.query;
     const paymentResponse = req.body; 
 
-    console.log("📄 Full Success Response Data:", paymentResponse);
-    
     const result = await paymentService.verifyPayment(
         tranId as string, 
         bookingId as string, 
         paymentResponse
     );
 
+    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:5000"; 
+
     if (result.success) {
-        return res.redirect(`${config.app_url}/api/payments/confirm?tranId=${tranId}&status=success`);
+        return res.redirect(`${frontendBaseUrl}/api/payments/confirm?tranId=${tranId}&status=success`);
     } else {
-        return res.redirect(`${config.app_url}/api/payments/fail?tranId=${tranId}&status=fail`);
+        return res.redirect(`${frontendBaseUrl}/api/payments/fail?tranId=${tranId}&status=fail`);
     }
 });
 
@@ -57,7 +57,9 @@ const failPayment = catchAsync(async (req: Request, res: Response) => {
 
     await paymentService.handleFailedPaymentInDB(tranId as string, bookingId as string);
 
-    return res.redirect(`${config.app_url}/api/payments/fail?tranId=${tranId}&status=fail`);
+    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:5000";
+
+    return res.redirect(`${frontendBaseUrl}/api/payments/fail?tranId=${tranId}&status=fail`);
 });
 
 
@@ -68,7 +70,9 @@ const cancelPayment = catchAsync(async (req: Request, res: Response) => {
 
     await paymentService.handleCancelledPaymentInDB(tranId as string, bookingId as string);
 
-    return res.redirect(`${config.app_url}/payments?tranId=${tranId}&status=cancel`);
+    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:5000";
+
+    return res.redirect(`${frontendBaseUrl}/payments?tranId=${tranId}&status=cancel`);
 });
 
 
