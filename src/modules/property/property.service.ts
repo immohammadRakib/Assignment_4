@@ -43,7 +43,7 @@ const getAllProperties = async (query: Record<string, any>) => {
     sortBy,
   } = query;
 
-  const { page = 1, limit = 10 } = query;
+  const { page = 1, limit = 5 } = query;
   const skip = (Number(page) - 1) * Number(limit);
 
   let roleBasedCondition: any = {};
