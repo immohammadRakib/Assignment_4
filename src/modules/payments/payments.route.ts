@@ -12,33 +12,43 @@ const router = express.Router();
 
 
 // Payment Confirmation Route (Accessible by TENANT, LANDLORD, and ADMIN roles)
-router.post(
-    '/confirm',
-    PaymentController.confirmPayment
-);
+// router.post(
+//     '/confirm',
+//     PaymentController.confirmPayment
+// );
+router.route('/fail')
+    .get(PaymentController.failPayment)
+    .post(PaymentController.failPayment);
 
+router.route('/confirm')
+    .get(PaymentController.confirmPayment)
+    .post(PaymentController.confirmPayment);
 
+router.route('/cancel')
+    .get(PaymentController.cancelPayment)
+    .post(PaymentController.cancelPayment);
 
 // Payment Failed
-router.post(
-    '/fail',
-    PaymentController.failPayment
-);
+// router.post(
+//     '/fail',
+//     PaymentController.failPayment
+// );
 
-// Payemnent Creation Route (Only accessible by TENANT role)
-router.post(
-    '/create',
-    auth(Role.TENANT), 
-    PaymentController.createPaymentIntent
-);
 
 
 // Payment Cancelled
-router.post(
-    '/cancel',
-    PaymentController.cancelPayment
-);
-
+// router.post(
+    //     '/cancel',
+    //     PaymentController.cancelPayment
+    // );
+    
+    
+    // Payemnent Creation Route (Only accessible by TENANT role)
+    router.post(
+        '/create',
+        auth(Role.TENANT), 
+        PaymentController.createPaymentIntent
+    );
 
 
 // Payment History Route
