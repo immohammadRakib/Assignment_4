@@ -127,6 +127,7 @@ const createProperty = async (
 
 
 const getAllProperties = async (query: Record<string, any>) => {
+    console.log("all query", query);
   const {
     role,
     landlordId,
