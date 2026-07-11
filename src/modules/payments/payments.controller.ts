@@ -53,7 +53,9 @@ const confirmPayment = catchAsync(async (req: Request, res: Response) => {
 
 // Fail payment after redirection from SSLCommerz
 const failPayment = catchAsync(async (req: Request, res: Response) => {
-    const { tranId, bookingId } = req.query;
+    // const { tranId, bookingId } = req.query;
+    const tranId = (req.query.tranId || req.body.tran_id) as string;
+    const bookingId = (req.query.bookingId || req.body.value_a) as string; 
 
     await paymentService.handleFailedPaymentInDB(tranId as string, bookingId as string);
 
@@ -66,7 +68,9 @@ const failPayment = catchAsync(async (req: Request, res: Response) => {
 
 // Cancel payment after redirection from SSLCommerz
 const cancelPayment = catchAsync(async (req: Request, res: Response) => {
-    const { tranId, bookingId } = req.query;
+    // const { tranId, bookingId } = req.query;
+    const tranId = (req.query.tranId || req.body.tran_id) as string;
+    const bookingId = (req.query.bookingId || req.body.value_a) as string; 
 
     await paymentService.handleCancelledPaymentInDB(tranId as string, bookingId as string);
 
