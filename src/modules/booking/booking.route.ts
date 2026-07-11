@@ -57,7 +57,7 @@ rentalRouter.get(
 
 
 // Cancel Booking by Tenant
-rentalRouter.patch(
+rentalRouter.delete(
     '/cancel/:id', 
     auth(Role.TENANT), 
     BookingController.cancelBooking
