@@ -40,17 +40,13 @@ const getAllProperties = catchAsync(async (req: Request, res: Response) => {
     } = req.query;
 
     const query = {
-        location: location as string,
-        categoryId: categoryId as string,
-        minPrice: minPrice ? Number(minPrice) : undefined,
-        maxPrice: maxPrice ? Number(maxPrice) : undefined,
-        sortBy: sortBy as string,
-        search: search as string,
-        page: page as string, 
-        limit: limit as string,
-        role: req.user?.role,       
-        landlordId: req.user?.id   
+    ...req.query, 
+    minPrice: req.query.minPrice ? Number(req.query.minPrice) : undefined,
+    maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : undefined,
+    role: req.user?.role,       
+    landlordId: req.user?.id   
     };
+
 
     const result = await PropertyService.getAllProperties(query);
 
