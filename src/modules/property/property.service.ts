@@ -124,7 +124,7 @@ const createProperty = async (
 // };
 
 
-// const prisma = new PrismaClient();
+
 
 const getAllProperties = async (query: Record<string, any>) => {
   const {
@@ -136,11 +136,13 @@ const getAllProperties = async (query: Record<string, any>) => {
     minPrice,
     maxPrice,
     sortBy,
+    page,
+    limit,
   } = query;
 
-  const page = Math.max(1, Number(query.page) || 1);
-  const limit = Math.max(1, Number(query.limit) || 5);
-  const skip = (page - 1) * limit;
+  const pageNumber = Math.max(1, Number(page) || 1);
+  const limitNumber = Math.max(1, Number(limit) || 5);
+  const skip = (pageNumber - 1) * limitNumber;
 
   const andConditions: any[] = [];
 
@@ -152,7 +154,7 @@ const getAllProperties = async (query: Record<string, any>) => {
       status: PropertyStatus.APPROVED,
       isAvailable: true,
       landlord: {
-        activeStatus: "ACTIVE", 
+        activeStatus: "ACTIVE",
       },
     });
   }
@@ -170,6 +172,7 @@ const getAllProperties = async (query: Record<string, any>) => {
   if (minPrice !== undefined && minPrice !== "") {
     andConditions.push({ pricePerDay: { gte: Number(minPrice) } });
   }
+
   if (maxPrice !== undefined && maxPrice !== "") {
     andConditions.push({ pricePerDay: { lte: Number(maxPrice) } });
   }
@@ -196,8 +199,8 @@ const getAllProperties = async (query: Record<string, any>) => {
     prisma.property.findMany({
       where: whereCondition,
       orderBy: orderByCondition as any,
-      skip,
-      take: limit,
+      skip,               
+      take: limitNumber,
       include: {
         landlord: {
           select: { id: true, name: true, activeStatus: true },
@@ -210,18 +213,19 @@ const getAllProperties = async (query: Record<string, any>) => {
     }),
   ]);
 
-  const totalPage = Math.ceil(total / limit);
+  const totalPage = Math.ceil(total / limitNumber); 
 
   return {
-    meta: { 
-      page, 
-      limit, 
-      total, 
-      totalPage 
+    meta: {
+      page: pageNumber,       
+      limit: limitNumber,
+      total,
+      totalPage,
     },
     data: result,
   };
 };
+
 
 
 
