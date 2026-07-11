@@ -105,7 +105,7 @@ const getAllProperties = async (query: Record<string, any>) => {
     prisma.property.findMany({
       where: finalWhereCondition,
       orderBy: orderByCondition as any,
-      skip,
+      skip: skip,
       take: limitNumber,
       include: {
         landlord: {
