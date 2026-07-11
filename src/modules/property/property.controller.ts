@@ -34,7 +34,9 @@ const getAllProperties = catchAsync(async (req: Request, res: Response) => {
         minPrice, 
         maxPrice, 
         sortBy, 
-        search 
+        search,
+        page,
+        limit
     } = req.query;
 
     const query = {
@@ -44,6 +46,8 @@ const getAllProperties = catchAsync(async (req: Request, res: Response) => {
         maxPrice: maxPrice ? Number(maxPrice) : undefined,
         sortBy: sortBy as string,
         search: search as string,
+        page: page as string, 
+        limit: limit as string,
         role: req.user?.role,       
         landlordId: req.user?.id   
     };
