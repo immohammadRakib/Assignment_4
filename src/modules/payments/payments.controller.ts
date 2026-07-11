@@ -5,8 +5,6 @@ import { sendResponse } from "../../utils/sendResponse";
 import { paymentService } from "./payments.service";
 import config from "../../config";
 
-
-
 // Create a payment intent for a booking
 const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
     const user = req.user; 
@@ -26,63 +24,61 @@ const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-
-
 // Confirm payment after redirection from SSLCommerz
 const confirmPayment = catchAsync(async (req: Request, res: Response) => {
     const { tranId, bookingId } = req.query;
-    const paymentResponse = req.body; 
+    const paymentResponse = req.body || {}; 
+
+    const finalTranId = (tranId || paymentResponse.tran_id) as string;
+    const finalBookingId = (bookingId || paymentResponse.value_a) as string;
 
     const result = await paymentService.verifyPayment(
-        tranId as string, 
-        bookingId as string, 
+        finalTranId, 
+        finalBookingId, 
         paymentResponse
     );
 
     const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:5000"; 
 
     if (result.success) {
-        return res.redirect(`${frontendBaseUrl}/api/payments/confirm?tranId=${tranId}&status=success`);
+        
+        return res.redirect(`${frontendBaseUrl}/payment/success?tranId=${finalTranId}&status=success`);
     } else {
-        return res.redirect(`${frontendBaseUrl}/api/payments/fail?tranId=${tranId}&status=fail`);
+        return res.redirect(`${frontendBaseUrl}/payment/fail?tranId=${finalTranId}&status=fail`);
     }
 });
 
-
-
-
 // Fail payment after redirection from SSLCommerz
 const failPayment = catchAsync(async (req: Request, res: Response) => {
-    // const { tranId, bookingId } = req.query;
-    const tranId = (req.query.tranId || req.body.tran_id) as string;
-    const bookingId = (req.query.bookingId || req.body.value_a) as string; 
+    const { tranId, bookingId } = req.query;
+    const paymentResponse = req.body || {};
 
-    await paymentService.handleFailedPaymentInDB(tranId as string, bookingId as string);
+    const finalTranId = (tranId || paymentResponse.tran_id) as string;
+    const finalBookingId = (bookingId || paymentResponse.value_a) as string; 
 
+    await paymentService.handleFailedPaymentInDB(finalTranId, finalBookingId);
+
+  
     const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:5000";
 
-    return res.redirect(`${frontendBaseUrl}/api/payments/fail?tranId=${tranId}&status=fail`);
+   
+    return res.redirect(`${frontendBaseUrl}/payment/fail?tranId=${finalTranId}&status=fail`);
 });
-
-
 
 // Cancel payment after redirection from SSLCommerz
 const cancelPayment = catchAsync(async (req: Request, res: Response) => {
-    // const { tranId, bookingId } = req.query;
-    const tranId = (req.query.tranId || req.body.tran_id) as string;
-    const bookingId = (req.query.bookingId || req.body.value_a) as string; 
+    const { tranId, bookingId } = req.query;
+    const paymentResponse = req.body || {};
 
-    await paymentService.handleCancelledPaymentInDB(tranId as string, bookingId as string);
+    const finalTranId = (tranId || paymentResponse.tran_id) as string;
+    const finalBookingId = (bookingId || paymentResponse.value_a) as string; 
+
+    await paymentService.handleCancelledPaymentInDB(finalTranId, finalBookingId);
 
     const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:5000";
 
-    return res.redirect(`${frontendBaseUrl}/payments?tranId=${tranId}&status=cancel`);
+    return res.redirect(`${frontendBaseUrl}/payment/cancel?tranId=${finalTranId}&status=cancel`);
 });
-
-
-
-
-
 
 // Get payment history for the authenticated user based on role
 const getPaymentHistory = catchAsync(async (req: Request, res: Response) => {
@@ -98,8 +94,6 @@ const getPaymentHistory = catchAsync(async (req: Request, res: Response) => {
         data: result,
     });
 });
-
-
 
 // Get specific payment details by ID
 const getPaymentDetails = catchAsync(async (req: Request, res: Response) => {
@@ -120,10 +114,6 @@ const getPaymentDetails = catchAsync(async (req: Request, res: Response) => {
         data: result,
     });
 });
-
-
-
-
 
 export const PaymentController = {
     createPaymentIntent,

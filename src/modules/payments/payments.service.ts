@@ -4,9 +4,6 @@ import axios from "axios";
 import { prisma } from "../../lib/prisma";
 import { BookingStatus, PaymentStatus } from "../../../generated/prisma/enums"; 
 
-
-
-
 // Initiate Payment 
 const initialPayment = async (bookingId: string, user: User) => {
     const booking = await prisma.booking.findUnique({
@@ -24,7 +21,7 @@ const initialPayment = async (bookingId: string, user: User) => {
 
     const tranId = `TRNX-${Date.now()}`;
 
-      await prisma.payment.upsert({
+    await prisma.payment.upsert({
         where: { bookingId: bookingId },
         update: {
             transactionId: tranId,
@@ -75,9 +72,6 @@ const initialPayment = async (bookingId: string, user: User) => {
     return { GatewayPageURL, tranId };
 };
 
-
-
-
 // Verify payment after redirection from SSLCommerz
 const verifyPayment = async (tranId: string, bookingId: string, paymentResponse: any) => {
     if (paymentResponse && paymentResponse.status === 'VALID') {
@@ -123,9 +117,6 @@ const verifyPayment = async (tranId: string, bookingId: string, paymentResponse:
     return { success: false, message: "Payment verification failed" };
 };
 
-
-
-
 // Handle Failed Payment
 const handleFailedPaymentInDB = async (tranId: string, bookingId: string) => {
     return await prisma.$transaction(async (tx) => {
@@ -143,9 +134,6 @@ const handleFailedPaymentInDB = async (tranId: string, bookingId: string) => {
     });
 };
 
-
-
-
 // Handle Cancelled Payment
 const handleCancelledPaymentInDB = async (tranId: string, bookingId: string) => {
     return await prisma.$transaction(async (tx) => {
@@ -162,10 +150,6 @@ const handleCancelledPaymentInDB = async (tranId: string, bookingId: string) => 
         return updatedBooking;
     });
 };
-
-
-
-
 
 // Get payment history based on User Role (Admin, Landlord, Tenant)
 const getPaymentHistoryFromDB = async (userId: string, role: string) => {
@@ -209,10 +193,6 @@ const getPaymentHistoryFromDB = async (userId: string, role: string) => {
     });
 };
 
-
-
-
-
 // Get specific payment details by ID with strict security check
 const getPaymentDetailsFromDB = async (id: string, userId: string, role: string) => {
     const payment = await prisma.payment.findUniqueOrThrow({
@@ -229,7 +209,6 @@ const getPaymentDetailsFromDB = async (id: string, userId: string, role: string)
                 }
             }
         }
-        
     });
 
     if (role === "ADMIN") {
@@ -246,9 +225,6 @@ const getPaymentDetailsFromDB = async (id: string, userId: string, role: string)
 
     return payment;
 };
-
-
-
 
 export const paymentService = {
     initialPayment, 
