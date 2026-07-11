@@ -245,7 +245,7 @@ const updateAvailability = async (
     where: { id },
   });
 
-  if (!property) {
+  if ( !property ) {
     throw new Error("Property not found!");
   }
   if (property.landlordId !== landlordId) {
