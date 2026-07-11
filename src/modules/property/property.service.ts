@@ -53,7 +53,7 @@ const getAllProperties = async (query: Record<string, any>) => {
 
   if (role === "ADMIN") {
     roleBasedCondition = {};
-  } else if (role === "LANDLORD" && landlordId && query.dashboard === "true" ) {
+  } else if (role === "LANDLORD" && landlordId ) {
     roleBasedCondition = { landlordId };
   } else {
     roleBasedCondition = {
