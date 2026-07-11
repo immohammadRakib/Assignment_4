@@ -194,7 +194,14 @@ const getPaymentHistoryFromDB = async (userId: string, role: string) => {
             booking: {
                 include: { 
                     property: true,
-                    tenant: { omit: { password: true } }
+                    tenant: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            role: true
+                        }
+                    }
                 }
             }
         },
@@ -217,7 +224,7 @@ const getPaymentDetailsFromDB = async (id: string, userId: string, role: string)
                         select: { landlordId: true, title: true, location: true } 
                     },
                     tenant: {
-                        select: { id: true, name: true, email: true } 
+                         select: { id: true, name: true, email: true, role: true } 
                     }
                 }
             }
