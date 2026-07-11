@@ -6,10 +6,12 @@ import { prisma } from "../../lib/prisma";
 
 // Create Review
 const createReview = async (tenantId: string, payload: ICreateReviewPayload) => {
-    const { propertyId, rating, comment } = payload;
-    const bookingId = (payload as any).bookingId;
+    const propertyId = payload.propertyId;
+    const bookingId = payload.bookingId;
+    const rating = Number(payload.rating);
+    const comment = payload.comment;
 
-    if (!bookingId) {
+    if (!bookingId || !propertyId) {
         throw new Error("Booking ID is required to submit a review!");
     }
 
@@ -52,8 +54,7 @@ const createReview = async (tenantId: string, payload: ICreateReviewPayload) => 
 
     const result = await prisma.review.create({
         data: {
-            propertyId,
-            landlordId: hasPaid.booking.property.landlordId, 
+            propertyId, 
             bookingId,
             tenantId,
             rating,

@@ -42,9 +42,9 @@ const confirmPayment = catchAsync(async (req: Request, res: Response) => {
     );
 
     if (result.success) {
-        return res.redirect(`${config.app_url}/payments?tranId=${tranId}&status=success`);
+        return res.redirect(`${config.app_url}/api/payments?tranId=${tranId}&status=success`);
     } else {
-        return res.redirect(`${config.app_url}/payments?tranId=${tranId}&status=fail`);
+        return res.redirect(`${config.app_url}/api/payments?tranId=${tranId}&status=fail`);
     }
 });
 
@@ -57,7 +57,7 @@ const failPayment = catchAsync(async (req: Request, res: Response) => {
 
     await paymentService.handleFailedPaymentInDB(tranId as string, bookingId as string);
 
-    return res.redirect(`${config.app_url}/payments?tranId=${tranId}&status=fail`);
+    return res.redirect(`${config.app_url}/api/payments?tranId=${tranId}&status=fail`);
 });
 
 
