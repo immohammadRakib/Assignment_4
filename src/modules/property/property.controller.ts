@@ -141,11 +141,11 @@ const changePropertyStatus = catchAsync(async (req: Request, res: Response) => {
 
 // Toggle Property Availability By Landlord
 const toggleAvailability = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params; 
+  const { propertyId } = req.params; 
   const { isAvailable } = req.body;
   const landlordId = req.user?.id; 
   
- if (!id || id === 'undefined') {
+ if (!propertyId || propertyId === 'undefined') {
     throw new Error("Property ID is required in URL parameters.");
   }
 
@@ -153,7 +153,7 @@ const toggleAvailability = catchAsync(async (req: Request, res: Response) => {
     throw new Error("Unauthorized access. Landlord ID missing.");
   }
 
-  const result = await PropertyService.updateAvailability(id as string, isAvailable, landlordId as string);
+  const result = await PropertyService.updateAvailability(propertyId as string, isAvailable, landlordId as string);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
