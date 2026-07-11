@@ -34,7 +34,7 @@ const initialPayment = async (bookingId: string, user: User) => {
             method: "SSLCOMMERZ",
         }
     });
-
+    
     const paymentData = {
         store_id: config.ssl_commerz_store_id,
         store_passwd: config.ssl_commerz_store_password,

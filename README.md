@@ -82,5 +82,5 @@ Make sure you have **Node.js** and **npm** installed on your machine.
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/your-username/RentNest.git](https://github.com/your-username/RentNest.git)
-   cd RentNest
+   git clone [https://github.com/immohammadRakib/Assignment_4](https://github.com/immohammadRakib/Assignment_4)
+   cd Assignment_4
