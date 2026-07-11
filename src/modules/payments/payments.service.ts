@@ -14,6 +14,11 @@ const initialPayment = async (bookingId: string, user: User) => {
         include: { tenant: true, property: true }
     });
 
+    console.log("=== DEBUGGING PAYMENT ===");
+console.log("Database Booking Tenant ID:", booking?.tenantId);
+console.log("Logged In User ID from Token:", user?.id);
+console.log("=========================");
+
     if (!booking || booking.tenantId !== user.id) {
         throw new Error("Booking not found!");
     }
