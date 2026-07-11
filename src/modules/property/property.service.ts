@@ -31,6 +31,101 @@ const createProperty = async (
 
 
 // Get All Properties
+// const getAllProperties = async (query: Record<string, any>) => {
+//   const {
+//     role,
+//     landlordId,
+//     search,
+//     location,
+//     categoryId,
+//     minPrice,
+//     maxPrice,
+//     sortBy,
+//   } = query;
+
+//   const { page = 1, limit = 5 } = query;
+//   const skip = (Number(page) - 1) * Number(limit);
+
+//   let roleBasedCondition: any = {};
+
+//   if (role === "ADMIN") {
+//     roleBasedCondition = {};
+//   } else if (role === "LANDLORD" && landlordId ) {
+//     roleBasedCondition = { landlordId };
+//   } else {
+//     roleBasedCondition = {
+//       isDeleted: false,
+//       status: PropertyStatus.APPROVED,
+//       isAvailable: true,
+//       landlord: {
+//         is: { activeStatus: "ACTIVE" },
+//       },
+//     };
+//   }
+
+//   const filterCondition: any = {};
+
+//   if (location) {
+//     filterCondition.location = { contains: location, mode: "insensitive" };
+//   }
+
+//   if (categoryId) {
+//     filterCondition.categoryId = categoryId;
+//   }
+
+//   if (minPrice !== undefined || maxPrice !== undefined) {
+//     const priceFilter: any = {};
+//     if (minPrice !== undefined && minPrice !== "")
+//       priceFilter.gte = Number(minPrice);
+//     if (maxPrice !== undefined && maxPrice !== "")
+//       priceFilter.lte = Number(maxPrice);
+//     filterCondition.pricePerDay = priceFilter;
+//   }
+
+//   if (search) {
+//     filterCondition.OR = [
+//       { title: { contains: search, mode: "insensitive" } },
+//       { city: { contains: search, mode: "insensitive" } },
+//       { description: { contains: search, mode: "insensitive" } },
+//     ];
+//   }
+
+//   const finalWhereCondition = { ...roleBasedCondition, ...filterCondition };
+
+//   const orderByCondition =
+//     sortBy === "newest"
+//       ? [{ createdAt: "desc" }]
+//       : [{ views: "desc" }, { reviews: { _count: "desc" } }];
+
+//   const [total, result] = await prisma.$transaction([
+//     prisma.property.count({ where: finalWhereCondition }),
+//     prisma.property.findMany({
+//       where: finalWhereCondition,
+//       orderBy: orderByCondition as any,
+//       skip,
+//       take: Number(limit),
+//       include: {
+//         landlord: {
+//           select: { id: true, name: true, activeStatus: true },
+//         },
+//         category: true,
+//         _count: {
+//           select: { reviews: true },
+//         },
+//       },
+//     }),
+//   ]);
+
+  
+//    return {
+//         meta: { page: Number(page), limit: Number(limit), total, totalPage: Math.ceil(total / Number(limit)) },
+//         data: result
+//     };
+// };
+
+
+// const prisma = new PrismaClient();
+
 const getAllProperties = async (query: Record<string, any>) => {
   const {
     role,
@@ -43,67 +138,66 @@ const getAllProperties = async (query: Record<string, any>) => {
     sortBy,
   } = query;
 
-  const { page = 1, limit = 5 } = query;
-  const skip = (Number(page) - 1) * Number(limit);
+  const page = Math.max(1, Number(query.page) || 1);
+  const limit = Math.max(1, Number(query.limit) || 5);
+  const skip = (page - 1) * limit;
 
-  let roleBasedCondition: any = {};
+  const andConditions: any[] = [];
 
-  if (role === "ADMIN") {
-    roleBasedCondition = {};
-  } else if (role === "LANDLORD" && landlordId ) {
-    roleBasedCondition = { landlordId };
-  } else {
-    roleBasedCondition = {
+  if (role === "LANDLORD" && landlordId) {
+    andConditions.push({ landlordId });
+  } else if (role !== "ADMIN") {
+    andConditions.push({
       isDeleted: false,
       status: PropertyStatus.APPROVED,
       isAvailable: true,
       landlord: {
-        is: { activeStatus: "ACTIVE" },
+        activeStatus: "ACTIVE", 
       },
-    };
+    });
   }
 
-  const filterCondition: any = {};
-
   if (location) {
-    filterCondition.location = { contains: location, mode: "insensitive" };
+    andConditions.push({
+      location: { contains: location, mode: "insensitive" },
+    });
   }
 
   if (categoryId) {
-    filterCondition.categoryId = categoryId;
+    andConditions.push({ categoryId });
   }
 
-  if (minPrice !== undefined || maxPrice !== undefined) {
-    const priceFilter: any = {};
-    if (minPrice !== undefined && minPrice !== "")
-      priceFilter.gte = Number(minPrice);
-    if (maxPrice !== undefined && maxPrice !== "")
-      priceFilter.lte = Number(maxPrice);
-    filterCondition.pricePerDay = priceFilter;
+  if (minPrice !== undefined && minPrice !== "") {
+    andConditions.push({ pricePerDay: { gte: Number(minPrice) } });
+  }
+  if (maxPrice !== undefined && maxPrice !== "") {
+    andConditions.push({ pricePerDay: { lte: Number(maxPrice) } });
   }
 
   if (search) {
-    filterCondition.OR = [
-      { title: { contains: search, mode: "insensitive" } },
-      { city: { contains: search, mode: "insensitive" } },
-      { description: { contains: search, mode: "insensitive" } },
-    ];
+    andConditions.push({
+      OR: [
+        { title: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+      ],
+    });
   }
 
-  const finalWhereCondition = { ...roleBasedCondition, ...filterCondition };
+  const whereCondition = andConditions.length > 0 ? { AND: andConditions } : {};
 
   const orderByCondition =
     sortBy === "newest"
       ? [{ createdAt: "desc" }]
       : [{ views: "desc" }, { reviews: { _count: "desc" } }];
 
-  const [total, result] = await prisma.$transaction([
-    prisma.property.count({ where: finalWhereCondition }),
+  const [total, result] = await Promise.all([
+    prisma.property.count({ where: whereCondition }),
     prisma.property.findMany({
-      where: finalWhereCondition,
+      where: whereCondition,
       orderBy: orderByCondition as any,
       skip,
-      take: Number(limit),
+      take: limit,
       include: {
         landlord: {
           select: { id: true, name: true, activeStatus: true },
@@ -116,12 +210,19 @@ const getAllProperties = async (query: Record<string, any>) => {
     }),
   ]);
 
-  
-   return {
-        meta: { page: Number(page), limit: Number(limit), total, totalPage: Math.ceil(total / Number(limit)) },
-        data: result
-    };
+  const totalPage = Math.ceil(total / limit);
+
+  return {
+    meta: { 
+      page, 
+      limit, 
+      total, 
+      totalPage 
+    },
+    data: result,
+  };
 };
+
 
 
 
