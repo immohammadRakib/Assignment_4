@@ -41,13 +41,10 @@ const getAllProperties = async (query: Record<string, any>) => {
     minPrice,
     maxPrice,
     sortBy,
-    page = 1,
-    limit = 5,
   } = query;
 
-  const pageNumber = Number(page) || 1;
-  const limitNumber = Number(limit) || 5;
-  const skip = (pageNumber - 1) * limitNumber;
+  const { page = 1, limit = 10 } = query;
+  const skip = (Number(page) - 1) * Number(limit);
 
   let roleBasedCondition: any = {};
 
@@ -105,8 +102,8 @@ const getAllProperties = async (query: Record<string, any>) => {
     prisma.property.findMany({
       where: finalWhereCondition,
       orderBy: orderByCondition as any,
-      skip: skip,
-      take: limitNumber,
+      skip,
+      take: Number(limit),
       include: {
         landlord: {
           select: { id: true, name: true, activeStatus: true },
@@ -119,15 +116,11 @@ const getAllProperties = async (query: Record<string, any>) => {
     }),
   ]);
 
-  return {
-    meta: {
-      page: pageNumber,
-      limit: limitNumber,
-      total,
-      totalPage: Math.ceil(total / limitNumber),
-    },
-    data: result,
-  };
+  
+   return {
+        meta: { page: Number(page), limit: Number(limit), total, totalPage: Math.ceil(total / Number(limit)) },
+        data: result
+    };
 };
 
 
