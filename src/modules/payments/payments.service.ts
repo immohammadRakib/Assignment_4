@@ -24,8 +24,25 @@ const initialPayment = async (bookingId: string, user: User) => {
 
     const tranId = `TRNX-${Date.now()}`;
 
-    await prisma.payment.create({
-        data: {
+    // await prisma.payment.create({
+    //     data: {
+    //         transactionId: tranId,
+    //         propertyId: booking.propertyId,
+    //         bookingId: bookingId,
+    //         amount: booking.totalPrice,
+    //         status: "PENDING", 
+    //         method: "SSLCOMMERZ",
+    //     }
+    // });
+
+      await prisma.payment.upsert({
+        where: { bookingId: bookingId },
+        update: {
+            transactionId: tranId,
+            status: "PENDING", 
+            amount: booking.totalPrice,
+        },
+        create: {
             transactionId: tranId,
             propertyId: booking.propertyId,
             bookingId: bookingId,
@@ -34,7 +51,7 @@ const initialPayment = async (bookingId: string, user: User) => {
             method: "SSLCOMMERZ",
         }
     });
-    
+
     const paymentData = {
         store_id: config.ssl_commerz_store_id,
         store_passwd: config.ssl_commerz_store_password,
@@ -130,7 +147,7 @@ const handleFailedPaymentInDB = async (tranId: string, bookingId: string) => {
 
         const updatedBooking = await tx.booking.update({
             where: { id: bookingId },
-            data: { status: "PENDING" } 
+            data: { status: BookingStatus.CONFIRMED } 
         });
 
         return updatedBooking;
@@ -145,12 +162,12 @@ const handleCancelledPaymentInDB = async (tranId: string, bookingId: string) => 
     return await prisma.$transaction(async (tx) => {
         await tx.payment.update({
             where: { transactionId: tranId },
-            data: { status: "CANCELLED" }
+            data: { status: BookingStatus.CANCELLED }
         });
 
         const updatedBooking = await tx.booking.update({
             where: { id: bookingId },
-            data: { status: "PENDING" }
+            data: { status: BookingStatus.PENDING }
         });
 
         return updatedBooking;
