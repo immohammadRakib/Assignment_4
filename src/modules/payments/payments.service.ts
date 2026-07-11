@@ -2,6 +2,7 @@ import { User } from "../../../generated/prisma/client";
 import config from "../../config";
 import axios from "axios";
 import { prisma } from "../../lib/prisma";
+import { BookingStatus, PaymentStatus } from "../../../generated/prisma/enums"; 
 
 
 
@@ -17,7 +18,7 @@ const initialPayment = async (bookingId: string, user: User) => {
         throw new Error("Booking not found!");
     }
 
-    if (booking.status !== "CONFIRMED") {
+    if (booking.status !== BookingStatus.CONFIRMED ) {
         throw new Error("You cannot pay for this booking until the landlord confirms the request.");
     }
 
