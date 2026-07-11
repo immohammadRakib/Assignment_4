@@ -4,7 +4,7 @@ import {
   ICreatePropertyPayload,
   IUpdatePropertyPayload,
 } from "./property.interface";
-
+import { calculatePagination } from "../../utils/pagination"
 
 
 
@@ -136,13 +136,9 @@ const getAllProperties = async (query: Record<string, any>) => {
     minPrice,
     maxPrice,
     sortBy,
-    page,
-    limit,
   } = query;
 
-  const pageNumber = Math.max(1, Number(page) || 1);
-  const limitNumber = Math.max(1, Number(limit) || 5);
-  const skip = (pageNumber - 1) * limitNumber;
+  const { page, limit, skip } = calculatePagination(query);
 
   const andConditions: any[] = [];
 
@@ -200,7 +196,7 @@ const getAllProperties = async (query: Record<string, any>) => {
       where: whereCondition,
       orderBy: orderByCondition as any,
       skip,               
-      take: limitNumber,
+      take: limit,
       include: {
         landlord: {
           select: { id: true, name: true, activeStatus: true },
@@ -213,15 +209,10 @@ const getAllProperties = async (query: Record<string, any>) => {
     }),
   ]);
 
-  const totalPage = Math.ceil(total / limitNumber); 
+  const totalPage = Math.ceil(total / limit); 
 
   return {
-    meta: {
-      page: pageNumber,       
-      limit: limitNumber,
-      total,
-      totalPage,
-    },
+    meta: { page, limit, total, totalPage },
     data: result,
   };
 };
