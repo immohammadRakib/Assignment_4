@@ -52,12 +52,12 @@ app.get("/", ( req: Request, res: Response ) => {
 app.use('/api/auth', UserRoutes);
 app.use('/api/auth', authRoutes);
 
+// Payments 
+app.use('/api/payments', PaymentRoutes); 
+
 // Property and Rentals
 app.use('/api', PropertyRoutes); 
 app.use('/api/rentals', RentalRoutes);
-
-// Payments 
-app.use('/api/payments', PaymentRoutes); 
 
 // Reviews and Categories
 app.use("/api/reviews", ReviewRoutes);
