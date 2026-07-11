@@ -9,12 +9,6 @@ import { Role } from '../../../generated/prisma/enums';
 const router = express.Router();
 
 
-// Payemnent Creation Route (Only accessible by TENANT role)
-router.post(
-    '/create',
-    auth(Role.TENANT), 
-    PaymentController.createPaymentIntent
-);
 
 
 // Payment Confirmation Route (Accessible by TENANT, LANDLORD, and ADMIN roles)
@@ -31,6 +25,12 @@ router.post(
     PaymentController.failPayment
 );
 
+// Payemnent Creation Route (Only accessible by TENANT role)
+router.post(
+    '/create',
+    auth(Role.TENANT), 
+    PaymentController.createPaymentIntent
+);
 
 
 // Payment Cancelled

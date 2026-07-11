@@ -42,9 +42,9 @@ const confirmPayment = catchAsync(async (req: Request, res: Response) => {
     const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:5000"; 
 
     if (result.success) {
-        return res.redirect(`${frontendBaseUrl}/api/payments?tranId=${tranId}&status=success`);
+        return res.redirect(`${frontendBaseUrl}/api/payments/confirm?tranId=${tranId}&status=success`);
     } else {
-        return res.redirect(`${frontendBaseUrl}/api/payments?tranId=${tranId}&status=fail`);
+        return res.redirect(`${frontendBaseUrl}/api/payments/fail?tranId=${tranId}&status=fail`);
     }
 });
 
@@ -59,7 +59,7 @@ const failPayment = catchAsync(async (req: Request, res: Response) => {
 
     const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:5000";
 
-    return res.redirect(`${frontendBaseUrl}/api/payments?tranId=${tranId}&status=fail`);
+    return res.redirect(`${frontendBaseUrl}/api/payments/fail?tranId=${tranId}&status=fail`);
 });
 
 
