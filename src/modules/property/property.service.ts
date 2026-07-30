@@ -83,6 +83,8 @@ const getAllProperties = async (query: Record<string, any>) => {
       OR: [
         { title: { contains: search, mode: "insensitive" } },
         { city: { contains: search, mode: "insensitive" } },
+        { location: { contains: search, mode: "insensitive" } },
+        { category: { name: { contains: search, mode: "insensitive" }}},
         { description: { contains: search, mode: "insensitive" } },
       ],
     });
