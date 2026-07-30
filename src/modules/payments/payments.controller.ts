@@ -43,10 +43,10 @@ const confirmPayment = catchAsync(async (req: Request, res: Response) => {
     if (result.success) {
         
         // return res.redirect(`${frontendBaseUrl}/payment/success?tranId=${finalTranId}&status=success`);
-        return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payment/success?tranId=${finalTranId}&status=success`);
+        return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payments/success?tranId=${finalTranId}&status=success`);
     } else {
         // return res.redirect(`${frontendBaseUrl}/payment/fail?tranId=${finalTranId}&status=fail`);
-        return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payment/fail?tranId=${finalTranId}&status=fail`);
+        return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payments/fail?tranId=${finalTranId}&status=fail`);
     }
 });
 
@@ -65,7 +65,7 @@ const failPayment = catchAsync(async (req: Request, res: Response) => {
 
    
     // return res.redirect(`${frontendBaseUrl}/payment/fail?tranId=${finalTranId}&status=fail`);
-    return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payment/fail?tranId=${finalTranId}&status=fail`);
+    return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payments/fail?tranId=${finalTranId}&status=fail`);
 });
 
 // Cancel payment after redirection from SSLCommerz
@@ -81,7 +81,7 @@ const cancelPayment = catchAsync(async (req: Request, res: Response) => {
     const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:3000";
 
     // return res.redirect(`${frontendBaseUrl}/payment/cancel?tranId=${finalTranId}&status=cancel`);
-    return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payment/cancel?tranId=${finalTranId}&status=cancel`);
+    return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payments/cancel?tranId=${finalTranId}&status=cancel`);
 });
 
 // Get payment history for the authenticated user based on role
