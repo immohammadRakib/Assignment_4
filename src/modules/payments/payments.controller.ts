@@ -38,13 +38,15 @@ const confirmPayment = catchAsync(async (req: Request, res: Response) => {
         paymentResponse
     );
 
-    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:5000"; 
+    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:3000"; 
 
     if (result.success) {
         
-        return res.redirect(`${frontendBaseUrl}/payment/success?tranId=${finalTranId}&status=success`);
+        // return res.redirect(`${frontendBaseUrl}/payment/success?tranId=${finalTranId}&status=success`);
+        return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payment/success?tranId=${finalTranId}&status=success`);
     } else {
-        return res.redirect(`${frontendBaseUrl}/payment/fail?tranId=${finalTranId}&status=fail`);
+        // return res.redirect(`${frontendBaseUrl}/payment/fail?tranId=${finalTranId}&status=fail`);
+        return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payment/fail?tranId=${finalTranId}&status=fail`);
     }
 });
 
@@ -59,10 +61,11 @@ const failPayment = catchAsync(async (req: Request, res: Response) => {
     await paymentService.handleFailedPaymentInDB(finalTranId, finalBookingId);
 
   
-    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:5000";
+    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:3000";
 
    
-    return res.redirect(`${frontendBaseUrl}/payment/fail?tranId=${finalTranId}&status=fail`);
+    // return res.redirect(`${frontendBaseUrl}/payment/fail?tranId=${finalTranId}&status=fail`);
+    return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payment/fail?tranId=${finalTranId}&status=fail`);
 });
 
 // Cancel payment after redirection from SSLCommerz
@@ -75,9 +78,10 @@ const cancelPayment = catchAsync(async (req: Request, res: Response) => {
 
     await paymentService.handleCancelledPaymentInDB(finalTranId, finalBookingId);
 
-    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:5000";
+    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:3000";
 
-    return res.redirect(`${frontendBaseUrl}/payment/cancel?tranId=${finalTranId}&status=cancel`);
+    // return res.redirect(`${frontendBaseUrl}/payment/cancel?tranId=${finalTranId}&status=cancel`);
+    return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payment/cancel?tranId=${finalTranId}&status=cancel`);
 });
 
 // Get payment history for the authenticated user based on role
