@@ -38,7 +38,7 @@ const confirmPayment = catchAsync(async (req: Request, res: Response) => {
         paymentResponse
     );
 
-    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:3000"; 
+    const frontendBaseUrl = config.client_url || "http://localhost:3000"; 
 
     if (result.success) {
         
@@ -61,7 +61,7 @@ const failPayment = catchAsync(async (req: Request, res: Response) => {
     await paymentService.handleFailedPaymentInDB(finalTranId, finalBookingId);
 
   
-    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const frontendBaseUrl = config.client_url || "http://localhost:3000";
 
    
     // return res.redirect(`${frontendBaseUrl}/payment/fail?tranId=${finalTranId}&status=fail`);
@@ -78,7 +78,7 @@ const cancelPayment = catchAsync(async (req: Request, res: Response) => {
 
     await paymentService.handleCancelledPaymentInDB(finalTranId, finalBookingId);
 
-    const frontendBaseUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const frontendBaseUrl = config.client_url || "http://localhost:3000";
 
     // return res.redirect(`${frontendBaseUrl}/payment/cancel?tranId=${finalTranId}&status=cancel`);
     return res.redirect(`${frontendBaseUrl}/dashboard/tenant/payments/cancel?tranId=${finalTranId}&status=cancel`);
