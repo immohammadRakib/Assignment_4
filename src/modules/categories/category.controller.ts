@@ -52,6 +52,9 @@ const deleteCategory = catchAsync( async ( req: Request, res: Response ) => {
 
 
 
+
+
+
 // Get All Property Under a Category
 const getCategoryWithPropertyCount = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
