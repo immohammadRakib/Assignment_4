@@ -58,24 +58,13 @@ const deleteCategory = async (id: string) => {
 
 // Get All Property Under a Category
 const getCategoryWithPropertyCount = async (id: string) => {
-
-     if (!id) {
-    throw new Error("Category ID is required!");
-  }
   const result = await prisma.category.findUnique({
-
-    where: { id: id },
+    where: { id },
     include: {
         _count: {
             select: { properties: true }, 
         },
-        properties: {
-        select: {
-          id: true,
-          title: true,
-          pricePerDay: true,
-        }
-      },
+        properties: true,
     },
   });
 
