@@ -30,16 +30,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
 
-app.use((req, res, next) => {
-  res.on('finish', async () => {
-    try {
-      await prisma.$disconnect(); 
-    } catch (error) {
-      console.error("Prisma cleanup error:", error);
-    }
-  });
-  next();
-});
+// app.use((req, res, next) => {
+//   res.on('finish', async () => {
+//     try {
+//       await prisma.$disconnect(); 
+//     } catch (error) {
+//       console.error("Prisma cleanup error:", error);
+//     }
+//   });
+//   next();
+// });
 
 
 

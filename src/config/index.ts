@@ -5,10 +5,10 @@ import path from "path";
 dotenv.config({ path: path.join( process.cwd(), ".env" ) });
 
 export default {
-    port: process.env.PORT || 3000,
+    port: process.env.PORT || 5000,
     database_url: process.env.DATABASE_URL || "", 
     app_url: process.env.APP_URL,
-    client_url: process.env.CLIENT_URL,
+    client_url: process.env.CLIENT_URL || "http://localhost:3000",
     bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
     jwt_access_secret: process.env.JWT_ACCESS_SECRET || "",
     jwt_refresh_secret: process.env.JWT_REFRESH_SECRET || "",
